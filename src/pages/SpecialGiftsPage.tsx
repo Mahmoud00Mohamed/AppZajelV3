@@ -23,7 +23,6 @@ import { ProductImage } from "../features/images";
 import FavoriteButton from "../components/ui/FavoriteButton";
 import AddToCartButton from "../components/ui/AddToCartButton";
 
-// Interface for Product type, adapted from original SpecialGiftsPage
 interface Product {
   id: number;
   nameEn: string;
@@ -44,22 +43,33 @@ interface FilterState {
   sortBy: string;
 }
 
+const RiyalSymbol = ({ className = "w-4 h-4" }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 1124.14 1256.39"
+    className={className}
+    fill="currentColor"
+  >
+    <path d="M699.62,1113.02h0c-20.06,44.48-33.32,92.75-38.4,143.37l424.51-90.24c20.06-44.47,33.31-92.75,38.4-143.37l-424.51,90.24Z" />
+    <path d="M1085.73,895.8c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.33v-135.2l292.27-62.11c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.27V66.13c-50.67,28.45-95.67,66.32-132.25,110.99v403.35l-132.25,28.11V0c-50.67,28.44-95.67,66.32-132.25,110.99v525.69l-295.91,62.88c-20.06,44.47-33.33,92.75-38.42,143.37l334.33-71.05v170.26l-358.3,76.14c-20.06,44.47-33.32,92.75-38.4,143.37l375.04-79.7c30.53-6.35,56.77-24.4,73.83-49.24l68.78-101.97v-.02c7.14-10.55,11.3-23.27,11.3-36.97v-149.98l132.25-28.11v270.4l424.53-90.28Z" />
+  </svg>
+);
+
 const SpecialGiftsPage: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const isRtl = i18n.language === "ar";
 
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showMobileFilters, setShowMobileFilters] = useState(false);
-  const [isLoading] = useState(false); // Can be hooked to actual data fetching
+  const [isLoading] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [showSortOptions, setShowSortOptions] = useState(false);
   const [expandedFilters, setExpandedFilters] = useState<string[]>([
     "price",
     "features",
   ]);
-  const [quickFilters, setQuickFilters] = useState<string[]>([]);
-  const [isMobile, setIsMobile] = useState(false);
 
-  // Memoize the data source and apply the Product type
   const specialGiftsData: Product[] = useMemo(() => getSpecialGifts(), []);
 
   useEffect(() => {
@@ -78,52 +88,31 @@ const SpecialGiftsPage: React.FC = () => {
     sortBy: "featured",
   });
 
-  const quickFilterOptions = [
-    {
-      id: "bestseller",
-      label: isRtl ? "الأكثر مبيعاً" : "Best Sellers",
-      icon: <Flame size={12} />,
-      color: "bg-amber-50 text-amber-700 border-amber-100",
-    },
-    {
-      id: "premium",
-      label: isRtl ? "فاخر" : "Premium",
-      icon: <Crown size={12} />,
-      color: "bg-purple-50 text-purple-700 border-purple-100",
-    },
-    {
-      id: "affordable",
-      label: isRtl ? "بأسعار معقولة" : "Affordable",
-      icon: <Tag size={12} />,
-      color: "bg-green-50 text-green-700 border-green-100",
-    },
-  ];
-
   const priceRanges = useMemo(
     () => [
       {
         id: "under-350",
-        label: isRtl ? "أقل من 350 ر.س" : "Under 350 SAR",
+        label: isRtl ? "أقل من 350" : "Under 350",
         range: [0, 349] as [number, number],
         count: specialGiftsData.filter((p) => p.price < 350).length,
       },
       {
         id: "350-700",
-        label: isRtl ? "350 ر.س إلى 700 ر.س" : "350 SAR to 700 SAR",
+        label: isRtl ? "350 إلى 700" : "350 to 700",
         range: [350, 700] as [number, number],
         count: specialGiftsData.filter((p) => p.price >= 350 && p.price <= 700)
           .length,
       },
       {
         id: "700-1000",
-        label: isRtl ? "700 ر.س إلى 1000 ر.س" : "700 SAR to 1000 SAR",
+        label: isRtl ? "700 إلى 1000" : "700 to 1000",
         range: [701, 1000] as [number, number],
         count: specialGiftsData.filter((p) => p.price > 700 && p.price <= 1000)
           .length,
       },
       {
         id: "over-1000",
-        label: isRtl ? "أكثر من 1000 ر.س" : "Over 1000 SAR",
+        label: isRtl ? "أكثر من 1000" : "Over 1000",
         range: [1001, Infinity] as [number, number],
         count: specialGiftsData.filter((p) => p.price > 1000).length,
       },
@@ -131,65 +120,12 @@ const SpecialGiftsPage: React.FC = () => {
     [isRtl, specialGiftsData]
   );
 
-  const filteredProducts = useMemo(() => {
-    let products = specialGiftsData;
-
-    if (searchTerm) {
-      products = products.filter((product) =>
-        (isRtl ? product.nameAr : product.nameEn)
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase())
-      );
-    }
-
-    if (filters.priceRange[0] !== 0 || filters.priceRange[1] !== Infinity) {
-      products = products.filter(
-        (product) =>
-          product.price >= filters.priceRange[0] &&
-          product.price <= filters.priceRange[1]
-      );
-    }
-
-    const allFeatures = [...filters.features, ...quickFilters];
-    if (allFeatures.length > 0) {
-      products = products.filter((product) => {
-        return allFeatures.every((feature) => {
-          switch (feature) {
-            case "bestseller":
-              return product.isBestSeller;
-            case "premium":
-              return product.price > 300;
-            case "affordable":
-              return product.price <= 200;
-            default:
-              return true;
-          }
-        });
-      });
-    }
-
-    return products.sort((a, b) => {
-      switch (filters.sortBy) {
-        case "price-low":
-          return a.price - b.price;
-        case "price-high":
-          return b.price - a.price;
-        case "name":
-          return isRtl
-            ? a.nameAr.localeCompare(b.nameAr)
-            : a.nameEn.localeCompare(b.nameEn);
-        default: // 'featured'
-          return (b.isBestSeller ? 1 : 0) - (a.isBestSeller ? 1 : 0);
-      }
-    });
-  }, [searchTerm, filters, quickFilters, isRtl, specialGiftsData]);
-
   const filterOptions = {
     features: [
       {
         id: "bestseller",
         nameKey: isRtl ? "الأكثر مبيعاً" : "Best Seller",
-        icon: <Sparkles size={14} />,
+        icon: <Flame size={14} />,
         count: specialGiftsData.filter((p) => p.isBestSeller).length,
       },
       {
@@ -209,21 +145,75 @@ const SpecialGiftsPage: React.FC = () => {
       {
         value: "featured",
         label: isRtl ? "مميز" : "Featured",
+        icon: <Sparkles size={14} />,
       },
       {
         value: "price-low",
         label: isRtl ? "السعر: منخفض إلى مرتفع" : "Price: Low to High",
+        icon: <DollarSign size={14} />,
       },
       {
         value: "price-high",
         label: isRtl ? "السعر: مرتفع إلى منخفض" : "Price: High to Low",
+        icon: <DollarSign size={14} />,
       },
       {
         value: "name",
         label: isRtl ? "الاسم" : "Name",
+        icon: <Tag size={14} />,
       },
     ],
   };
+
+  const filteredProducts = useMemo(() => {
+    let products = specialGiftsData;
+
+    if (searchTerm) {
+      products = products.filter((product) =>
+        (isRtl ? product.nameAr : product.nameEn)
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())
+      );
+    }
+
+    products = products.filter(
+      (product) =>
+        product.price >= filters.priceRange[0] &&
+        product.price <= filters.priceRange[1]
+    );
+
+    if (filters.features.length > 0) {
+      products = products.filter((product) =>
+        filters.features.every((feature) => {
+          switch (feature) {
+            case "bestseller":
+              return product.isBestSeller;
+            case "premium":
+              return product.price > 300;
+            case "affordable":
+              return product.price <= 200;
+            default:
+              return true;
+          }
+        })
+      );
+    }
+
+    return products.sort((a, b) => {
+      switch (filters.sortBy) {
+        case "price-low":
+          return a.price - b.price;
+        case "price-high":
+          return b.price - a.price;
+        case "name":
+          return isRtl
+            ? a.nameAr.localeCompare(b.nameAr)
+            : a.nameEn.localeCompare(b.nameEn);
+        default:
+          return (b.isBestSeller ? 1 : 0) - (a.isBestSeller ? 1 : 0);
+      }
+    });
+  }, [searchTerm, filters, isRtl, specialGiftsData]);
 
   const updateFilter = (
     key: keyof FilterState,
@@ -245,12 +235,33 @@ const SpecialGiftsPage: React.FC = () => {
     setFilters((prev) => ({ ...prev, priceRange: [min, max] }));
   };
 
-  const toggleQuickFilter = (filterId: string) => {
-    setQuickFilters((prev) =>
-      prev.includes(filterId)
-        ? prev.filter((id) => id !== filterId)
-        : [...prev, filterId]
+  const clearFilters = () => {
+    setFilters({
+      priceRange: [0, Infinity],
+      features: [],
+      sortBy: "featured",
+    });
+    setSearchTerm("");
+  };
+
+  const hasActiveFilters =
+    filters.features.length > 0 ||
+    filters.priceRange[0] !== 0 ||
+    filters.priceRange[1] !== Infinity ||
+    searchTerm.length > 0;
+
+  const activeFiltersCount =
+    filters.features.length +
+    (filters.priceRange[0] !== 0 || filters.priceRange[1] !== Infinity
+      ? 1
+      : 0) +
+    (searchTerm.length > 0 ? 1 : 0);
+
+  const getSortLabel = (sortByValue: string): string => {
+    const sortOption = filterOptions.sortOptions.find(
+      (option) => option.value === sortByValue
     );
+    return sortOption ? sortOption.label : "";
   };
 
   const toggleFilterExpansion = (filterKey: string) => {
@@ -261,89 +272,35 @@ const SpecialGiftsPage: React.FC = () => {
     );
   };
 
-  const clearFilters = () => {
-    setFilters({
-      priceRange: [0, Infinity],
-      features: [],
-      sortBy: "featured",
-    });
-    setQuickFilters([]);
-    setSearchTerm("");
-  };
-
-  const hasActiveFilters =
-    filters.features.length > 0 ||
-    filters.priceRange[0] !== 0 ||
-    filters.priceRange[1] !== Infinity ||
-    searchTerm.length > 0 ||
-    quickFilters.length > 0;
-
-  const activeFiltersCount =
-    filters.features.length +
-    quickFilters.length +
-    (filters.priceRange[0] !== 0 || filters.priceRange[1] !== Infinity
-      ? 1
-      : 0) +
-    (searchTerm.length > 0 ? 1 : 0);
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-rose-50 to-purple-50 px-4 sm:px-6 lg:px-8 font-serif text-neutral-800">
-      <div className="max-w-7xl mx-auto py-8 flex flex-col lg:flex-row gap-8">
-        {/* Desktop Filters Sidebar */}
-        <div className="hidden lg:block w-72 flex-shrink-0">
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-neutral-100">
-            <div className="mb-6">
-              <label className="flex items-center gap-2 text-sm font-bold text-purple-800 mb-3">
-                <Search size={16} />
-                {isRtl ? "البحث" : "Search"}
-              </label>
-              <div className="relative">
-                <Search
-                  size={16}
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400"
-                />
-                <input
-                  type="text"
-                  placeholder={isRtl ? "ابحث عن الهدايا..." : "Search gifts..."}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-purple-400 text-sm transition-all duration-300 bg-neutral-50 placeholder-neutral-400"
-                />
-                {searchTerm && (
+    <div className="min-h-screen bg-gradient-to-br from-rose-50 to-purple-50 text-neutral-800 font-sans p-4 sm:p-6 lg:p-12">
+      <div className="max-w-7xl mx-auto">
+        {/* Main Content Grid */}
+        <main className="grid lg:grid-cols-[280px_1fr] gap-8">
+          {/* Desktop Filters Sidebar */}
+          <motion.aside
+            initial={{ opacity: 0, x: isRtl ? 50 : -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="hidden lg:block"
+          >
+            <div className="bg-white/80 backdrop-blur-md p-6 rounded-3xl shadow-2xl space-y-8 sticky top-8 border border-white/20">
+              <div className="flex justify-between items-center pb-4 border-b border-purple-100">
+                <h3 className="text-xl font-bold flex items-center gap-2 text-neutral-900">
+                  <SlidersHorizontal size={20} className="text-purple-600" />
+                  {isRtl ? "الفلاتر" : "Filters"}
+                </h3>
+                {hasActiveFilters && (
                   <button
-                    onClick={() => setSearchTerm("")}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                    onClick={clearFilters}
+                    className="text-sm font-medium text-rose-600 hover:text-rose-700 transition-colors"
                   >
-                    <X size={16} />
+                    {isRtl ? "مسح الكل" : "Clear All"}
                   </button>
                 )}
               </div>
-            </div>
 
-            <div className="flex items-center justify-between mb-6 border-b border-neutral-200 pb-3">
-              <h3 className="flex items-center gap-2 text-sm font-bold text-purple-800">
-                <SlidersHorizontal size={16} />
-                {isRtl ? "فلاتر التصفية" : "Filters"}
-              </h3>
-              {hasActiveFilters && (
-                <button
-                  onClick={clearFilters}
-                  className="flex items-center gap-1 text-xs text-rose-600 hover:text-rose-700 transition-colors font-medium"
-                >
-                  <X size={12} />
-                  {isRtl ? "مسح الكل" : "Clear"}
-                </button>
-              )}
-            </div>
-
-            {hasActiveFilters && (
-              <div className="mb-6 p-3 bg-purple-50 rounded-lg text-xs text-purple-700 font-bold border border-purple-100">
-                {activeFiltersCount} {isRtl ? "فلتر نشط" : "active filters"} •{" "}
-                {filteredProducts.length} {isRtl ? "نتيجة" : "results"}
-              </div>
-            )}
-
-            <div className="space-y-4">
+              {/* Price Filter */}
               <div className="bg-neutral-50 rounded-lg p-4 border border-neutral-100">
                 <button
                   onClick={() => toggleFilterExpansion("price")}
@@ -367,50 +324,41 @@ const SpecialGiftsPage: React.FC = () => {
                       exit={{ opacity: 0, height: 0 }}
                       className="mt-3 space-y-3 overflow-hidden"
                     >
-                      {priceRanges.map((rangeOption) => (
+                      {priceRanges.map((option) => (
                         <label
-                          key={rangeOption.id}
+                          key={option.id}
                           className="flex items-center gap-3 text-sm text-neutral-700 cursor-pointer hover:text-purple-600 transition-colors"
                         >
                           <input
                             type="radio"
                             name="priceRange"
                             checked={
-                              filters.priceRange[0] === rangeOption.range[0] &&
-                              filters.priceRange[1] === rangeOption.range[1]
+                              filters.priceRange[0] === option.range[0] &&
+                              filters.priceRange[1] === option.range[1]
                             }
                             onChange={() =>
                               handlePriceRangeSelect(
-                                rangeOption.range[0],
-                                rangeOption.range[1]
+                                option.range[0],
+                                option.range[1]
                               )
                             }
                             className="rounded-full border-neutral-300 text-purple-500 focus:ring-purple-500 w-4 h-4"
                           />
-                          <span className="font-medium">
-                            {rangeOption.label}
+                          <span className="font-medium flex items-center gap-1">
+                            {option.label}
+                            <RiyalSymbol className="w-3.5 h-3.5 text-neutral-700" />
                           </span>
                           <span className="text-xs text-neutral-400 font-normal">
-                            ({rangeOption.count})
+                            ({option.count})
                           </span>
                         </label>
                       ))}
-                      <div className="text-xs text-neutral-600 font-medium pt-2 border-t border-neutral-100">
-                        {isRtl ? "النطاق المحدد: " : "Selected Range: "}{" "}
-                        {filters.priceRange[0]} {isRtl ? "ر.س" : "SAR"}{" "}
-                        {isRtl ? "إلى" : "to"}{" "}
-                        {filters.priceRange[1] === Infinity
-                          ? isRtl
-                            ? "أقصى"
-                            : "Max"
-                          : filters.priceRange[1]}{" "}
-                        {isRtl ? "ر.س" : "SAR"}
-                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
               </div>
 
+              {/* Features Filter */}
               <div className="bg-neutral-50 rounded-lg p-4 border border-neutral-100">
                 <button
                   onClick={() => toggleFilterExpansion("features")}
@@ -447,7 +395,9 @@ const SpecialGiftsPage: React.FC = () => {
                             }
                             className="rounded border-neutral-300 text-purple-500 focus:ring-purple-500 w-4 h-4"
                           />
-                          <span className="font-medium">{feature.nameKey}</span>
+                          <span className="font-medium flex items-center gap-2">
+                            {feature.icon} {feature.nameKey}
+                          </span>
                           <span className="text-xs text-neutral-400 font-normal">
                             ({feature.count})
                           </span>
@@ -458,112 +408,127 @@ const SpecialGiftsPage: React.FC = () => {
                 </AnimatePresence>
               </div>
             </div>
-          </div>
-        </div>
+          </motion.aside>
 
-        {/* Main Content */}
-        <div className="flex-1 min-w-0">
-          <div className="bg-white rounded-2xl shadow-lg p-5 border border-neutral-100 mb-6">
-            <div className="flex flex-col sm:flex-row gap-4 items-center justify-between mb-4">
-              <div className="relative flex-1 w-full lg:hidden">
-                <Search
-                  size={16}
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400"
-                />
-                <input
-                  type="text"
-                  placeholder={t("header.search")}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-purple-400 text-sm bg-neutral-50 placeholder-neutral-400"
-                />
-              </div>
-
-              {isMobile && (
-                <button
-                  onClick={() => setShowMobileFilters(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-bold hover:bg-purple-700 transition-colors shadow-md"
-                >
-                  <Filter size={14} />
-                  {isRtl ? "فلتر" : "Filter"}
-                  {hasActiveFilters && (
-                    <span className="bg-white text-purple-600 rounded-full w-4 h-4 text-xs flex items-center justify-center font-bold">
-                      {activeFiltersCount}
-                    </span>
-                  )}
-                </button>
-              )}
-
-              <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
-                <div className="text-sm text-neutral-700 font-medium">
-                  <span className="font-bold text-purple-600">
-                    {filteredProducts.length}
-                  </span>{" "}
-                  {isRtl ? "هدية" : "gifts"}
-                </div>
-                <div className="relative">
-                  <select
-                    value={filters.sortBy}
-                    onChange={(e) => updateFilter("sortBy", e.target.value)}
-                    className="appearance-none pl-4 pr-10 py-2 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-purple-400 text-sm bg-neutral-50 cursor-pointer font-medium"
-                  >
-                    {filterOptions.sortOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown
+          {/* Main Product Area */}
+          <div className="lg:col-span-1">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="bg-white/80 backdrop-blur-md p-5 rounded-3xl shadow-2xl border border-white/20 mb-6 relative z-20"
+            >
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                {/* Search Bar */}
+                <div className="relative w-full sm:flex-1">
+                  <Search
                     size={16}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400 pointer-events-none"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-400"
                   />
+                  <input
+                    type="text"
+                    placeholder={isRtl ? "ابحث عن هدايا..." : "Search gifts..."}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 bg-purple-50 rounded-full border border-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-600 text-sm placeholder-purple-400"
+                  />
+                  {searchTerm && (
+                    <button
+                      onClick={() => setSearchTerm("")}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-400 hover:text-purple-600"
+                    >
+                      <X size={16} />
+                    </button>
+                  )}
                 </div>
-                <div className="flex bg-neutral-100 rounded-lg p-1 shadow-inner">
-                  <button
-                    onClick={() => setViewMode("grid")}
-                    className={`p-2 rounded-md transition-colors ${
-                      viewMode === "grid"
-                        ? "bg-white text-purple-600 shadow-sm"
-                        : "text-neutral-500 hover:bg-neutral-200"
-                    }`}
-                  >
-                    <Grid size={16} />
-                  </button>
-                  <button
-                    onClick={() => setViewMode("list")}
-                    className={`p-2 rounded-md transition-colors ${
-                      viewMode === "list"
-                        ? "bg-white text-purple-600 shadow-sm"
-                        : "text-neutral-500 hover:bg-neutral-200"
-                    }`}
-                  >
-                    <List size={16} />
-                  </button>
+
+                <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
+                  {isMobile && (
+                    <button
+                      onClick={() => setShowMobileFilters(true)}
+                      className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-full text-sm font-bold hover:bg-purple-700 transition-colors shadow-lg"
+                    >
+                      <Filter size={14} />
+                      {isRtl ? "الفلاتر" : "Filters"}
+                      {activeFiltersCount > 0 && (
+                        <span className="bg-white text-purple-600 rounded-full w-5 h-5 text-xs flex items-center justify-center font-bold">
+                          {activeFiltersCount}
+                        </span>
+                      )}
+                    </button>
+                  )}
+
+                  {/* Sort Dropdown */}
+                  <div className="relative z-30">
+                    <button
+                      onClick={() => setShowSortOptions(!showSortOptions)}
+                      className="flex items-center gap-2 px-4 py-2.5 bg-purple-50 rounded-full border border-purple-200 text-sm font-medium hover:bg-purple-100 transition-colors"
+                    >
+                      <span className="hidden sm:inline">
+                        {isRtl ? "ترتيب حسب" : "Sort by"}:
+                      </span>
+                      <span className="font-bold text-purple-600">
+                        {getSortLabel(filters.sortBy)}
+                      </span>
+                      <ChevronDown size={16} className="text-purple-400" />
+                    </button>
+                    <AnimatePresence>
+                      {showSortOptions && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          className="absolute w-48 mt-2 bg-white rounded-xl shadow-lg border border-purple-200 right-0 overflow-hidden"
+                        >
+                          {filterOptions.sortOptions.map((option) => (
+                            <button
+                              key={option.value}
+                              onClick={() => {
+                                updateFilter("sortBy", option.value);
+                                setShowSortOptions(false);
+                              }}
+                              className={`w-full text-left px-4 py-2 text-sm font-medium hover:bg-purple-50 transition-colors ${
+                                filters.sortBy === option.value
+                                  ? "bg-purple-50 text-purple-600"
+                                  : "text-neutral-700"
+                              }`}
+                            >
+                              {option.label}
+                            </button>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+
+                  {/* View Mode Toggles */}
+                  <div className="hidden sm:flex bg-purple-200 rounded-full p-1">
+                    <button
+                      onClick={() => setViewMode("grid")}
+                      className={`p-2 rounded-full transition-colors ${
+                        viewMode === "grid"
+                          ? "bg-white text-purple-600 shadow-sm"
+                          : "text-purple-500 hover:bg-purple-300"
+                      }`}
+                    >
+                      <Grid size={16} />
+                    </button>
+                    <button
+                      onClick={() => setViewMode("list")}
+                      className={`p-2 rounded-full transition-colors ${
+                        viewMode === "list"
+                          ? "bg-white text-purple-600 shadow-sm"
+                          : "text-purple-500 hover:bg-purple-300"
+                      }`}
+                    >
+                      <List size={16} />
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
-            {!isMobile && (
-              <div className="mt-4 flex flex-wrap gap-2 overflow-x-auto pb-2 scrollbar-hidden">
-                {quickFilterOptions.map((option) => (
-                  <button
-                    key={option.id}
-                    onClick={() => toggleQuickFilter(option.id)}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium border transition-all duration-200 ${
-                      quickFilters.includes(option.id)
-                        ? option.color
-                        : "bg-neutral-50 text-neutral-600 border-neutral-200 hover:bg-neutral-100"
-                    }`}
-                  >
-                    {option.icon}
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="pb-8">
+            {/* Product List/Grid */}
             <AnimatePresence mode="wait">
               {isLoading ? (
                 <motion.div
@@ -571,9 +536,9 @@ const SpecialGiftsPage: React.FC = () => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="flex justify-center items-center py-16"
+                  className="flex justify-center items-center py-20"
                 >
-                  <div className="animate-spin rounded-full h-10 w-10 border-4 border-purple-600 border-t-transparent"></div>
+                  <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-600 border-t-transparent"></div>
                 </motion.div>
               ) : filteredProducts.length > 0 ? (
                 viewMode === "grid" ? (
@@ -587,10 +552,10 @@ const SpecialGiftsPage: React.FC = () => {
                     {filteredProducts.map((product, index) => (
                       <div
                         key={product.id}
-                        className="bg-white rounded-xl shadow-md border border-neutral-100 overflow-hidden relative group transition-transform duration-300"
+                        className="bg-white rounded-xl shadow-md border border-neutral-100 overflow-hidden relative transition-all duration-300"
                       >
                         <Link to={`/product/${product.id}`} className="block">
-                          <div className="relative aspect-[4/3] overflow-hidden">
+                          <div className="relative aspect-[4/3] overflow-hidden group">
                             <ProductImage
                               src={product.imageUrl}
                               alt={isRtl ? product.nameAr : product.nameEn}
@@ -634,8 +599,9 @@ const SpecialGiftsPage: React.FC = () => {
                             </h3>
                           </Link>
                           <div className="flex items-center justify-between mt-2">
-                            <p className="text-base font-bold text-purple-700">
-                              {product.price} {isRtl ? "ر.س" : "SAR"}
+                            <p className="text-base font-bold text-purple-700 flex items-center gap-1">
+                              {product.price}
+                              <RiyalSymbol className="w-3.5 h-3.5 text-purple-700" />
                             </p>
                             <AddToCartButton
                               product={product}
@@ -660,7 +626,7 @@ const SpecialGiftsPage: React.FC = () => {
                     {filteredProducts.map((product, index) => (
                       <div
                         key={product.id}
-                        className="bg-white rounded-xl shadow-md border border-neutral-100 p-4 flex flex-col sm:flex-row gap-4 items-start transition-transform duration-300"
+                        className="bg-white rounded-xl shadow-md border border-neutral-100 p-4 flex flex-col sm:flex-row gap-4 items-start transition-all duration-300"
                       >
                         <Link
                           to={`/product/${product.id}`}
@@ -677,15 +643,23 @@ const SpecialGiftsPage: React.FC = () => {
                             quality={100}
                             priority={index < 4}
                             showZoom={false}
+                            placeholderSize={28}
                           />
                         </Link>
                         <div className="flex-1 flex flex-col justify-between w-full">
                           <div>
-                            <Link to={`/product/${product.id}`}>
-                              <h3 className="text-base font-bold text-neutral-800 hover:text-purple-600 transition-colors mb-1">
-                                {isRtl ? product.nameAr : product.nameEn}
-                              </h3>
-                            </Link>
+                            <div className="flex justify-between items-center mb-1">
+                              <Link to={`/product/${product.id}`}>
+                                <h3 className="text-base font-bold text-neutral-800 hover:text-purple-600 transition-colors">
+                                  {isRtl ? product.nameAr : product.nameEn}
+                                </h3>
+                              </Link>
+                              <FavoriteButton
+                                product={product}
+                                className="bg-neutral-100 rounded-full p-2 text-rose-500 hover:bg-neutral-200 transition-colors"
+                                size={16}
+                              />
+                            </div>
                             <div className="flex flex-wrap gap-1.5 mb-2">
                               {product.isBestSeller && (
                                 <span className="bg-amber-100 text-amber-800 text-xs px-1.5 py-0.5 rounded-full font-semibold">
@@ -705,8 +679,9 @@ const SpecialGiftsPage: React.FC = () => {
                             </p>
                           </div>
                           <div className="flex items-center justify-between mt-3">
-                            <p className="text-lg font-bold text-purple-700">
-                              {product.price} {isRtl ? "ر.س" : "SAR"}
+                            <p className="text-lg font-bold text-purple-700 flex items-center gap-1">
+                              {product.price}
+                              <RiyalSymbol className="w-4 h-4 text-purple-700" />
                             </p>
                             <AddToCartButton
                               product={product}
@@ -726,22 +701,22 @@ const SpecialGiftsPage: React.FC = () => {
                   key="no-products"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="text-center py-16 bg-white rounded-xl shadow-md border border-neutral-100"
+                  className="text-center py-20 bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-white/20"
                 >
-                  <div className="w-20 h-20 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-5 shadow-inner">
-                    <Search size={32} className="text-neutral-400" />
+                  <div className="w-24 h-24 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Search size={40} className="text-purple-400" />
                   </div>
-                  <h3 className="text-lg font-bold text-neutral-800 mb-2">
+                  <h3 className="text-2xl font-bold text-neutral-900 mb-3">
                     {isRtl ? "لا توجد هدايا" : "No Gifts Found"}
                   </h3>
-                  <p className="text-neutral-600 mb-6 text-sm max-w-sm mx-auto font-medium">
+                  <p className="text-neutral-600 mb-8 text-sm max-w-sm mx-auto">
                     {isRtl
                       ? "لا توجد هدايا تطابق معايير البحث. جرب تعديل الفلاتر أو مسحها."
                       : "No gifts match your search criteria. Try adjusting or clearing filters."}
                   </p>
                   <button
                     onClick={clearFilters}
-                    className="px-5 py-2.5 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors flex items-center gap-2 mx-auto text-sm font-bold shadow-md"
+                    className="px-6 py-3 bg-rose-600 text-white rounded-full hover:bg-rose-700 transition-colors flex items-center gap-2 mx-auto text-sm font-bold shadow-lg"
                   >
                     <X size={14} />
                     {isRtl ? "مسح الفلاتر" : "Clear Filters"}
@@ -750,7 +725,7 @@ const SpecialGiftsPage: React.FC = () => {
               )}
             </AnimatePresence>
           </div>
-        </div>
+        </main>
       </div>
 
       {/* Mobile Filters Modal */}
@@ -760,7 +735,7 @@ const SpecialGiftsPage: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
             onClick={() => setShowMobileFilters(false)}
           >
             <motion.div
@@ -769,88 +744,70 @@ const SpecialGiftsPage: React.FC = () => {
               exit={{ x: isRtl ? "100%" : "-100%" }}
               className={`fixed inset-y-0 ${
                 isRtl ? "right-0" : "left-0"
-              } w-11/12 sm:w-80 bg-white shadow-2xl overflow-y-auto p-6 rounded-l-2xl lg:rounded-none transition-transform duration-300 ease-out`}
+              } w-full sm:w-80 bg-white shadow-2xl overflow-y-auto p-6 transition-transform duration-300 ease-in-out`}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between mb-6 border-b border-neutral-200 pb-3">
-                <h3 className="flex items-center gap-2 text-lg font-bold text-purple-800">
-                  <Filter size={18} />
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-neutral-200">
+                <h3 className="flex items-center gap-2 text-2xl font-bold text-neutral-900">
+                  <Filter size={20} className="text-purple-600" />
                   {isRtl ? "فلاتر البحث" : "Search Filters"}
                 </h3>
                 <button
                   onClick={() => setShowMobileFilters(false)}
-                  className="p-2 hover:bg-neutral-100 rounded-full transition-colors text-neutral-600"
+                  className="p-2 rounded-full text-neutral-600 hover:bg-neutral-100 transition-colors"
                 >
-                  <X size={18} />
+                  <X size={20} />
                 </button>
               </div>
 
-              <div className="space-y-5">
+              <div className="space-y-6">
+                {/* Price Filter (Mobile) */}
                 <div>
-                  <h4 className="flex items-center gap-2 text-sm font-bold text-neutral-800 mb-3">
-                    <Sparkles size={16} className="text-purple-600" />
-                    {isRtl ? "فلاتر سريعة" : "Quick Filters"}
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {quickFilterOptions.map((option) => (
-                      <button
-                        key={option.id}
-                        onClick={() => toggleQuickFilter(option.id)}
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
-                          quickFilters.includes(option.id)
-                            ? option.color
-                            : "bg-neutral-50 text-neutral-600 border-neutral-200 hover:bg-neutral-100"
-                        }`}
-                      >
-                        {option.icon}
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h4 className="flex items-center gap-2 text-sm font-bold text-neutral-800 mb-3">
-                    <DollarSign size={16} className="text-purple-600" />
+                  <h4 className="flex items-center gap-2 text-lg font-semibold mb-3">
+                    <DollarSign size={18} className="text-purple-600" />
                     {isRtl ? "نطاق السعر" : "Price Range"}
                   </h4>
                   <div className="space-y-3">
-                    {priceRanges.map((rangeOption) => (
+                    {priceRanges.map((option) => (
                       <label
-                        key={rangeOption.id}
-                        className="flex items-center gap-3 text-sm text-neutral-700 cursor-pointer hover:text-purple-600 transition-colors"
+                        key={option.id}
+                        className="flex items-center gap-3 text-neutral-700 cursor-pointer"
                       >
                         <input
                           type="radio"
                           name="priceRange"
                           checked={
-                            filters.priceRange[0] === rangeOption.range[0] &&
-                            filters.priceRange[1] === rangeOption.range[1]
+                            filters.priceRange[0] === option.range[0] &&
+                            filters.priceRange[1] === option.range[1]
                           }
                           onChange={() =>
                             handlePriceRangeSelect(
-                              rangeOption.range[0],
-                              rangeOption.range[1]
+                              option.range[0],
+                              option.range[1]
                             )
                           }
-                          className="rounded-full border-neutral-300 text-purple-500 focus:ring-purple-500 w-4 h-4"
+                          className="form-radio text-purple-600 bg-purple-50 border-purple-200 focus:ring-purple-600 w-5 h-5"
                         />
-                        <span className="font-medium">{rangeOption.label}</span>
+                        <span className="font-medium flex items-center gap-1">
+                          {option.label}
+                          <RiyalSymbol className="w-3.5 h-3.5 text-neutral-700" />
+                        </span>
                       </label>
                     ))}
                   </div>
                 </div>
 
+                {/* Features Filter (Mobile) */}
                 <div>
-                  <h4 className="flex items-center gap-2 text-sm font-bold text-neutral-800 mb-3">
-                    <Sparkles size={16} className="text-purple-600" />
+                  <h4 className="flex items-center gap-2 text-lg font-semibold mb-3">
+                    <Sparkles size={18} className="text-purple-600" />
                     {isRtl ? "المميزات" : "Features"}
                   </h4>
                   <div className="space-y-3">
                     {filterOptions.features.map((feature) => (
                       <label
                         key={feature.id}
-                        className="flex items-center gap-3 text-sm text-neutral-700 cursor-pointer hover:text-purple-600 transition-colors"
+                        className="flex items-center gap-3 text-neutral-700 cursor-pointer"
                       >
                         <input
                           type="checkbox"
@@ -858,30 +815,35 @@ const SpecialGiftsPage: React.FC = () => {
                           onChange={() =>
                             toggleArrayFilter("features", feature.id)
                           }
-                          className="rounded border-neutral-300 text-purple-500 focus:ring-purple-500 w-4 h-4"
+                          className="form-checkbox rounded-md text-purple-600 bg-purple-50 border-purple-200 focus:ring-purple-600 w-5 h-5"
                         />
-                        <span className="font-medium">{feature.nameKey}</span>
+                        <span className="font-medium flex items-center gap-2">
+                          {feature.icon} {feature.nameKey}
+                        </span>
                       </label>
                     ))}
                   </div>
                 </div>
               </div>
 
-              <div className="mt-8 pt-5 border-t border-neutral-200 space-y-3">
-                <div className="text-sm text-neutral-600 text-center font-medium">
-                  {filteredProducts.length}{" "}
+              {/* Action Buttons */}
+              <div className="mt-8 pt-6 border-t border-neutral-200 space-y-3">
+                <div className="text-center text-sm text-neutral-600 font-medium">
+                  <span className="font-bold text-neutral-900">
+                    {filteredProducts.length}
+                  </span>{" "}
                   {isRtl ? "هدية موجودة" : "gifts found"}
                 </div>
                 <button
                   onClick={clearFilters}
-                  className="w-full px-4 py-3 bg-rose-50 text-rose-700 rounded-lg hover:bg-rose-100 transition-colors flex items-center justify-center gap-2 font-bold text-sm shadow-sm"
+                  className="w-full px-4 py-3 bg-rose-50 text-rose-700 rounded-full hover:bg-rose-100 transition-colors flex items-center justify-center gap-2 font-bold text-sm shadow-sm"
                 >
                   <X size={16} />
                   {isRtl ? "مسح الفلاتر" : "Clear Filters"}
                 </button>
                 <button
                   onClick={() => setShowMobileFilters(false)}
-                  className="w-full px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center gap-2 font-bold text-sm shadow-md"
+                  className="w-full px-4 py-3 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition-colors flex items-center justify-center gap-2 font-bold text-sm shadow-lg"
                 >
                   <CheckCircle size={16} />
                   {isRtl ? "تطبيق الفلاتر" : "Apply Filters"}
