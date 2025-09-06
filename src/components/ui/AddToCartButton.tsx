@@ -44,9 +44,9 @@ const AddToCartButton: React.FC<AddToCartButtonProps> = ({
   };
 
   const variantClasses = {
-    primary: "bg-primary text-white hover:bg-primary-dark",
-    secondary: "bg-white text-primary border border-primary hover:bg-primary/5",
-    icon: "p-2 bg-primary text-white hover:bg-primary-dark rounded-full",
+    primary: "bg-primary-600 text-white hover:bg-primary-700",
+    secondary: "bg-white text-primary-600 border border-primary-300 hover:bg-primary-50",
+    icon: "p-2 bg-primary-600 text-white hover:bg-primary-700 rounded-full",
   };
 
   const handleAddToCart = async (e: React.MouseEvent) => {
@@ -139,7 +139,7 @@ const AddToCartButton: React.FC<AddToCartButtonProps> = ({
     flex items-center justify-center font-medium rounded-xl transition-all duration-300
     ${sizeClasses[size]}
     ${variantClasses[variant]}
-    ${justAdded ? "bg-green-500 hover:bg-green-600" : ""}
+    ${justAdded ? "bg-success-500 hover:bg-success-600" : ""}
     ${
       isAdding || justAdded
         ? "cursor-not-allowed opacity-90"

@@ -87,7 +87,7 @@ const BottomNavigation: React.FC = () => {
               {active && (
                 <motion.div
                   layoutId="active-indicator"
-                  className="absolute top-0 h-1 w-8 rounded-full bg-purple-800"
+                  className="absolute top-0 h-1 w-8 rounded-full bg-primary-800"
                   transition={{ type: "spring", stiffness: 380, damping: 30 }}
                 />
               )}
@@ -97,18 +97,18 @@ const BottomNavigation: React.FC = () => {
                   // تم تعديل الحجم ليتناسب مع تصميم Heroicons
                   size={25}
                   className={`transition-colors ${
-                    active ? "text-purple-800" : "text-gray-500"
+                    active ? "text-primary-800" : "text-neutral-500"
                   }`}
                 />
 
                 {item.id === "notifications" && (
-                  <span className="absolute -top-1 -right-1 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white" />
+                  <span className="absolute -top-1 -right-1 block h-2 w-2 rounded-full bg-error-500 ring-2 ring-white" />
                 )}
                 {item.id === "favorites" &&
                   typeof item.badge === "number" &&
                   isAuthenticated &&
                   item.badge > 0 && (
-                    <span className="absolute -top-1.5 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-medium text-white">
+                    <span className="absolute -top-1.5 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-error-500 px-1 text-[10px] font-medium text-white">
                       {item.badge > 9 ? "9+" : item.badge}
                     </span>
                   )}
@@ -116,7 +116,7 @@ const BottomNavigation: React.FC = () => {
 
               <span
                 className={`text-[11px] font-medium transition-colors ${
-                  active ? "text-purple-800" : "text-gray-600"
+                  active ? "text-primary-800" : "text-neutral-600"
                 }`}
               >
                 {t(item.labelKey)}

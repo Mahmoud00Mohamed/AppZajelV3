@@ -315,7 +315,7 @@ const HeroSlider: React.FC = () => {
                   >
                     <Link
                       to={`/occasion/${currentSlideData.occasion.id}`}
-                      className="inline-flex items-center bg-white/95 backdrop-blur-sm text-gray-800 px-4 py-2 sm:px-8 sm:py-4 text-sm sm:text-lg font-semibold rounded-xl sm:rounded-2xl transition-all duration-300 border border-white/30"
+                      className="inline-flex items-center bg-white/95 backdrop-blur-sm text-neutral-800 px-4 py-2 sm:px-8 sm:py-4 text-sm sm:text-lg font-semibold rounded-xl sm:rounded-2xl transition-all duration-300 border border-white/30 hover:shadow-brand"
                     >
                       <span>{t("home.hero.giftNow")}</span>
                       <motion.span
@@ -389,7 +389,7 @@ const HeroSlider: React.FC = () => {
                   >
                     <Link
                       to={currentSlideData.promotion.link}
-                      className="inline-flex items-center bg-white/95 backdrop-blur-sm text-gray-800 px-4 py-2 sm:px-8 sm:py-4 text-sm sm:text-lg font-semibold rounded-xl sm:rounded-2xl transition-all duration-300 border border-white/30"
+                      className="inline-flex items-center bg-white/95 backdrop-blur-sm text-neutral-800 px-4 py-2 sm:px-8 sm:py-4 text-sm sm:text-lg font-semibold rounded-xl sm:rounded-2xl transition-all duration-300 border border-white/30 hover:shadow-brand"
                     >
                       <span>
                         {isArabic

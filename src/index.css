@@ -6,6 +6,14 @@
   --font-sans-en: "Poppins", sans-serif;
   --font-sans-ar: "Tajawal", sans-serif;
   --font-serif: "Playfair Display", serif;
+  
+  /* Brand Colors CSS Variables (for JS access) */
+  --color-primary: theme('colors.primary.600');
+  --color-secondary: theme('colors.secondary.500');
+  --color-accent: theme('colors.accent.500');
+  --color-success: theme('colors.success.500');
+  --color-warning: theme('colors.warning.500');
+  --color-error: theme('colors.error.500');
 }
 
 html,
@@ -45,23 +53,23 @@ html[dir="rtl"] body {
   }
 
   .btn-primary {
-    @apply bg-primary text-white hover:bg-primary-dark shadow-sm hover:shadow-md;
+    @apply bg-primary-600 text-white hover:bg-primary-700 shadow-sm hover:shadow-brand;
   }
 
   .btn-secondary {
-    @apply bg-white text-primary border border-primary hover:bg-primary/5 shadow-sm hover:shadow-md;
+    @apply bg-white text-primary-600 border border-primary-300 hover:bg-primary-50 shadow-sm hover:shadow-brand;
   }
 
   .card {
-    @apply rounded-lg overflow-hidden shadow-md transition-all duration-300 hover:shadow-lg bg-white;
+    @apply rounded-2xl overflow-hidden shadow-md transition-all duration-300 hover:shadow-brand-lg bg-white border border-neutral-100;
   }
 
   .section-title {
-    @apply text-2xl md:text-3xl font-serif font-light text-center mb-8 text-gray-900 tracking-tight;
+    @apply text-2xl md:text-3xl font-serif font-light text-center mb-8 text-text-primary tracking-tight;
   }
 
   .view-more {
-    @apply text-primary hover:text-primary-dark font-normal transition-colors tracking-wide;
+    @apply text-primary-600 hover:text-primary-700 font-normal transition-colors tracking-wide;
   }
 
   .scrollbar-hidden {

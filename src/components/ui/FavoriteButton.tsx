@@ -67,8 +67,8 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({
       onClick={handleToggleFavorite}
       className={`flex items-center justify-center transition-all duration-300 ${
         isProductFavorite
-          ? "text-red-500 hover:text-red-600"
-          : "text-gray-400 hover:text-red-500"
+          ? "text-error-500 hover:text-error-600"
+          : "text-neutral-400 hover:text-error-500"
       } ${className}`}
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.9 }}

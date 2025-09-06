@@ -127,7 +127,7 @@ const BestSellersSection: React.FC = () => {
                       />
 
                       <div className="absolute top-2 left-2 rtl:right-2 rtl:left-auto z-10">
-                        <div className="bg-blue-600 text-white text-xs font-semibold py-1 px-2 rounded-full flex items-center gap-1 shadow-sm">
+                        <div className="bg-info-600 text-white text-xs font-semibold py-1 px-2 rounded-full flex items-center gap-1 shadow-sm">
                           <Crown size={12} />
                           {t("home.bestSellers.bestSeller")}
                         </div>
@@ -139,7 +139,7 @@ const BestSellersSection: React.FC = () => {
                           ? product.nameAr
                           : product.nameEn}
                       </h3>
-                      <p className="text-base font-semibold text-purple-900">
+                      <p className="text-base font-semibold text-primary-900">
                         {product.price} {isRtl ? "ر.س" : "SAR"}
                       </p>
                     </div>

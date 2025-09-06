@@ -128,7 +128,7 @@ const FeaturedCollectionsSection: React.FC = () => {
                         fallbackSrc="https://images.pexels.com/photos/1058775/pexels-photo-1058775.jpeg?auto=compress&cs=tinysrgb&w=400"
                       />
                       <div className="absolute top-2 left-2 rtl:right-2 rtl:left-auto z-10">
-                        <div className="bg-pink-600 text-white text-xs font-semibold py-1 px-2 rounded-full flex items-center gap-1 shadow-sm">
+                        <div className="bg-secondary-600 text-white text-xs font-semibold py-1 px-2 rounded-full flex items-center gap-1 shadow-sm">
                           <Gift size={12} />
                           {t("home.featuredCollections.specialGift")}
                         </div>
@@ -140,7 +140,7 @@ const FeaturedCollectionsSection: React.FC = () => {
                           ? product.nameAr
                           : product.nameEn}
                       </h3>
-                      <p className="text-base font-semibold text-purple-900">
+                      <p className="text-base font-semibold text-primary-900">
                         {product.price} {i18n.language === "ar" ? "ر.س" : "SAR"}
                       </p>
                     </div>

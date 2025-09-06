@@ -110,7 +110,7 @@ function Stack({
                 }}
                 style={{
                   width: cardDimensions.width,
-                  height: cardDimensions.height,
+                className="hidden md:flex items-center justify-center absolute top-[40%] -translate-y-1/2 bg-white/90 text-neutral-600 rounded-full w-9 h-9 shadow ring-1 ring-neutral-200 z-10 -right-8"
                 }}
               >
                 <img
@@ -249,7 +249,7 @@ const CategoriesSection: React.FC = () => {
           <h2
             className={`
     relative z-10 inline-flex items-center justify-center
-    bg-purple-600 text-white px-5 py-2 text-xl font-bold
+    bg-primary-600 text-white px-5 py-2 text-xl font-bold
     ${i18n.language === "ar" ? "font-tajawal" : "font-poppins"}
     rounded-md
   `}
@@ -257,7 +257,7 @@ const CategoriesSection: React.FC = () => {
             <span
               className="absolute left-0 -ml-2 w-0 h-0
                      border-t-[10px] border-b-[10px] border-r-[10px]
-                     border-t-transparent border-b-transparent border-r-purple-600"
+                     border-t-transparent border-b-transparent border-r-primary-600"
             ></span>
 
             {t("home.categories.title")}
@@ -265,7 +265,7 @@ const CategoriesSection: React.FC = () => {
             <span
               className="absolute right-0 -mr-2 w-0 h-0
                      border-t-[10px] border-b-[10px] border-l-[10px]
-                     border-t-transparent border-b-transparent border-l-purple-600"
+                     border-t-transparent border-b-transparent border-l-primary-600"
             ></span>
           </h2>
         </div>
@@ -305,7 +305,7 @@ const CategoriesSection: React.FC = () => {
                 perspective: "1200px",
                 WebkitOverflowScrolling: "touch",
                 scrollbarWidth: isMobile ? "none" : "thin",
-                scrollbarColor: isMobile
+                scrollbarColor: isMobile ? "transparent" : "rgb(147 51 234) transparent",
                   ? "transparent"
                   : "#8A2BE2 transparent",
               }}

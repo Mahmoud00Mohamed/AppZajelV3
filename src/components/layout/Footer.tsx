@@ -51,7 +51,7 @@ const Footer: React.FC = () => {
 
           {/* Quick Links */}
           <div>
-            <h3 className="font-serif text-lg font-semibold text-purple-800 mb-4">
+            <h3 className="font-serif text-lg font-semibold text-primary-800 mb-4">
               {t("footer.quickLinks")}
             </h3>
             <ul className="space-y-2">
@@ -60,7 +60,7 @@ const Footer: React.FC = () => {
                   <li key={link}>
                     <Link
                       to={`/${link}`}
-                      className="text-stone-600 hover:text-purple-600 transition-colors duration-300 text-sm"
+                      className="text-neutral-600 hover:text-primary-600 transition-colors duration-300 text-sm"
                     >
                       {t(`footer.${link}`)}
                     </Link>
@@ -72,7 +72,7 @@ const Footer: React.FC = () => {
 
           {/* Legal */}
           <div>
-            <h3 className="font-serif text-lg font-semibold text-purple-800 mb-4">
+            <h3 className="font-serif text-lg font-semibold text-primary-800 mb-4">
               {t("footer.legal")}
             </h3>
             <ul className="space-y-2">
@@ -80,7 +80,7 @@ const Footer: React.FC = () => {
                 <li key={link}>
                   <Link
                     to={`/${link}`}
-                    className="text-stone-600 hover:text-purple-600 transition-colors duration-300 text-sm"
+                    className="text-neutral-600 hover:text-primary-600 transition-colors duration-300 text-sm"
                   >
                     {t(`footer.${link}`)}
                   </Link>
@@ -91,34 +91,34 @@ const Footer: React.FC = () => {
 
           {/* Contact */}
           <div>
-            <h3 className="font-serif text-lg font-semibold text-purple-800 mb-4">
+            <h3 className="font-serif text-lg font-semibold text-primary-800 mb-4">
               {t("footer.contactUs")}
             </h3>
             <ul className="space-y-3">
               <li className="flex items-start">
                 <MapPin
                   size={18}
-                  className={`text-purple-600 ${
+                  className={`text-primary-600 ${
                     isRtl ? "ml-2" : "mr-2"
                   } mt-0.5`}
                 />
-                <span className="text-stone-600 text-sm">
+                <span className="text-neutral-600 text-sm">
                   {t("footer.location")}
                 </span>
               </li>
               <li className="flex items-center">
                 <Phone
                   size={18}
-                  className={`text-purple-600 ${isRtl ? "ml-2" : "mr-2"}`}
+                  className={`text-primary-600 ${isRtl ? "ml-2" : "mr-2"}`}
                 />
-                <span className="text-stone-600 text-sm">+20 123 456 789</span>
+                <span className="text-neutral-600 text-sm">+20 123 456 789</span>
               </li>
               <li className="flex items-center">
                 <Mail
                   size={18}
-                  className={`text-purple-600 ${isRtl ? "ml-2" : "mr-2"}`}
+                  className={`text-primary-600 ${isRtl ? "ml-2" : "mr-2"}`}
                 />
-                <span className="text-stone-600 text-sm">
+                <span className="text-neutral-600 text-sm">
                   info@zajilalsaadah.com
                 </span>
               </li>
@@ -127,7 +127,7 @@ const Footer: React.FC = () => {
         </div>
 
         <div className="border-t border-gray-200 mt-8 pt-8 text-center">
-          <p className="text-stone-500 text-sm">{t("footer.copyright")}</p>
+          <p className="text-neutral-500 text-sm">{t("footer.copyright")}</p>
         </div>
       </div>
 
@@ -136,7 +136,7 @@ const Footer: React.FC = () => {
         onClick={scrollToTop}
         className={`absolute bottom-6 ${
           isRtl ? "left-4 sm:left-6" : "right-4 sm:right-6"
-        } z-50 w-10 h-10 sm:w-12 sm:h-12 bg-white/90 backdrop-blur-md text-purple-600 rounded-full flex items-center justify-center shadow-md border border-purple-200/50 transition-colors duration-300 hover:bg-purple-100`}
+        } z-50 w-10 h-10 sm:w-12 sm:h-12 bg-white/90 backdrop-blur-md text-primary-600 rounded-full flex items-center justify-center shadow-brand border border-primary-200/50 transition-colors duration-300 hover:bg-primary-100`}
         aria-label={t("common.scrollToTop")}
       >
         <svg

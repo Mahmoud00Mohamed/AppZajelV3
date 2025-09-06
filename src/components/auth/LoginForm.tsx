@@ -86,14 +86,14 @@ const LoginForm: React.FC = () => {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-            className="w-16 h-16 bg-gradient-to-r from-purple-600 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4"
+            className="w-16 h-16 bg-gradient-brand rounded-full flex items-center justify-center mx-auto mb-4"
           >
             <LogIn className="w-8 h-8 text-white" />
           </motion.div>
-          <h1 className="text-2xl font-bold text-purple-800 mb-2">
+          <h1 className="text-2xl font-bold text-primary-800 mb-2">
             {isRtl ? "تسجيل الدخول" : "Sign In"}
           </h1>
-          <p className="text-gray-600">
+          <p className="text-neutral-600">
             {isRtl ? "مرحباً بك مرة أخرى" : "Welcome back"}
           </p>
         </div>
@@ -105,8 +105,8 @@ const LoginForm: React.FC = () => {
             onClick={() => setLoginMethod("email")}
             className={`flex-1 py-2 px-4 rounded-lg transition-all ${
               loginMethod === "email"
-                ? "bg-white shadow-sm text-purple-600 font-medium"
-                : "text-gray-600"
+                ? "bg-white shadow-sm text-primary-600 font-medium"
+                : "text-neutral-600"
             }`}
           >
             <Mail size={16} className="inline mr-2 rtl:ml-2 rtl:mr-0" />
@@ -117,8 +117,8 @@ const LoginForm: React.FC = () => {
             onClick={() => setLoginMethod("phone")}
             className={`flex-1 py-2 px-4 rounded-lg transition-all ${
               loginMethod === "phone"
-                ? "bg-white shadow-sm text-purple-600 font-medium"
-                : "text-gray-600"
+                ? "bg-white shadow-sm text-primary-600 font-medium"
+                : "text-neutral-600"
             }`}
           >
             <Phone size={16} className="inline mr-2 rtl:ml-2 rtl:mr-0" />
@@ -136,14 +136,14 @@ const LoginForm: React.FC = () => {
                 <div className="relative">
                   <Mail
                     size={18}
-                    className="absolute left-3 rtl:right-3 rtl:left-auto top-1/2 transform -translate-y-1/2 text-gray-400"
+                    className="absolute left-3 rtl:right-3 rtl:left-auto top-1/2 transform -translate-y-1/2 text-neutral-400"
                   />
                   <input
                     type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full pl-10 rtl:pr-10 rtl:pl-4 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                    className="w-full pl-10 rtl:pr-10 rtl:pl-4 pr-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                     placeholder={
                       isRtl ? "أدخل بريدك الإلكتروني" : "Enter your email"
                     }
@@ -159,14 +159,14 @@ const LoginForm: React.FC = () => {
                 <div className="relative">
                   <Lock
                     size={18}
-                    className="absolute left-3 rtl:right-3 rtl:left-auto top-1/2 transform -translate-y-1/2 text-gray-400"
+                    className="absolute left-3 rtl:right-3 rtl:left-auto top-1/2 transform -translate-y-1/2 text-neutral-400"
                   />
                   <input
                     type={showPassword ? "text" : "password"}
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
-                    className="w-full pl-10 rtl:pr-10 pr-12 rtl:pl-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                    className="w-full pl-10 rtl:pr-10 pr-12 rtl:pl-12 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                     placeholder={
                       isRtl ? "أدخل كلمة المرور" : "Enter your password"
                     }
@@ -175,7 +175,7 @@ const LoginForm: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 rtl:left-3 rtl:right-auto top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 rtl:left-3 rtl:right-auto top-1/2 transform -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -190,14 +190,14 @@ const LoginForm: React.FC = () => {
               <div className="relative">
                 <Phone
                   size={18}
-                  className="absolute left-3 rtl:right-3 rtl:left-auto top-1/2 transform -translate-y-1/2 text-gray-400"
+                  className="absolute left-3 rtl:right-3 rtl:left-auto top-1/2 transform -translate-y-1/2 text-neutral-400"
                 />
                 <input
                   type="tel"
                   name="phoneNumber"
                   value={formData.phoneNumber}
                   onChange={handleChange}
-                  className="w-full pl-10 rtl:pr-10 rtl:pl-4 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  className="w-full pl-10 rtl:pr-10 rtl:pl-4 pr-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                   placeholder={isRtl ? "+966501234567" : "+966501234567"}
                   required
                 />
@@ -209,7 +209,7 @@ const LoginForm: React.FC = () => {
             <label className="flex items-center">
               <input
                 type="checkbox"
-                className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                className="rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
               />
               <span className="ml-2 rtl:mr-2 rtl:ml-0 text-sm text-gray-600">
                 {isRtl ? "تذكرني" : "Remember me"}
@@ -217,7 +217,7 @@ const LoginForm: React.FC = () => {
             </label>
             <Link
               to="/auth/forgot-password"
-              className="text-sm text-purple-600 hover:text-purple-700 transition-colors"
+              className="text-sm text-primary-600 hover:text-primary-700 transition-colors"
             >
               {isRtl ? "نسيت كلمة المرور؟" : "Forgot password?"}
             </Link>
@@ -226,7 +226,7 @@ const LoginForm: React.FC = () => {
           <motion.button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-4 rounded-xl font-medium hover:from-purple-700 hover:to-pink-600 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full bg-gradient-brand text-white py-3 px-4 rounded-xl font-medium hover:shadow-brand-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
@@ -259,7 +259,7 @@ const LoginForm: React.FC = () => {
 
             <button
               onClick={handleGoogleLogin}
-              className="w-full mt-4 bg-white border border-gray-300 text-gray-700 py-3 px-4 rounded-xl font-medium hover:bg-gray-50 transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-3"
+              className="w-full mt-4 bg-white border border-neutral-300 text-neutral-700 py-3 px-4 rounded-xl font-medium hover:bg-neutral-50 transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-3"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path
@@ -287,11 +287,11 @@ const LoginForm: React.FC = () => {
         )}
 
         <div className="mt-8 text-center">
-          <p className="text-gray-600">
+          <p className="text-neutral-600">
             {isRtl ? "ليس لديك حساب؟" : "Don't have an account?"}{" "}
             <Link
               to="/auth/signup"
-              className="text-purple-600 hover:text-purple-700 font-medium transition-colors"
+              className="text-primary-600 hover:text-primary-700 font-medium transition-colors"
             >
               {isRtl ? "إنشاء حساب جديد" : "Sign up"}
             </Link>

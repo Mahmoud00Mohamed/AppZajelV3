@@ -25,12 +25,12 @@ const Logo: React.FC<LogoProps> = ({ small = false }) => {
       </div>
       <div className={`${small ? "ml-1.5" : "ml-2"} rtl:mr-2 rtl:ml-0`}>
         <h1
-          className={`font-bold ${small ? "text-lg" : "text-xl"} text-primary`}
+          className={`font-bold ${small ? "text-lg" : "text-xl"} text-primary-600`}
         >
           {isArabic ? "زاجل السعادة" : "Zajil Al-Sa'adah"}
         </h1>
         {!small && (
-          <p className="text-xs text-gray-500 -mt-1">
+          <p className="text-xs text-neutral-500 -mt-1">
             {isArabic ? "هدايا مميزة" : "Premium Gifts"}
           </p>
         )}
