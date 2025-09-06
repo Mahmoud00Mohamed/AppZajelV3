@@ -292,16 +292,9 @@ const SpecialGiftsPage: React.FC = () => {
   };
 
   return (
-    <div className="relative min-h-screen bg-neutral-950 text-neutral-50 p-4 sm:p-6 lg:p-12 font-sans overflow-hidden">
-      {/* Background Grid */}
-      <div className="absolute inset-0 z-0 bg-neutral-950 [background-size:20px_20px] [background-image:radial-gradient(rgb(38_38_38)_1px,transparent_1px)]" />
-
-      {/* Main Container */}
-      <div className="relative max-w-7xl mx-auto z-10">
-        <h1 className="text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-rose-400 mb-8 sm:mb-12 text-center drop-shadow-lg">
-          {isRtl ? "هدايا مميزة" : "Special Gifts"}
-        </h1>
-
+    <div className="min-h-screen bg-gradient-to-br from-rose-50 to-purple-50 text-neutral-800 font-sans p-4 sm:p-6 lg:p-12">
+      <div className="max-w-7xl mx-auto">
+        {/* Main Content Grid */}
         <main className="grid lg:grid-cols-[280px_1fr] gap-8">
           {/* Desktop Filters Sidebar */}
           <motion.aside
@@ -310,16 +303,16 @@ const SpecialGiftsPage: React.FC = () => {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="hidden lg:block"
           >
-            <div className="bg-neutral-900/50 backdrop-blur-lg border border-neutral-800 p-6 rounded-3xl shadow-[0_0_40px_rgba(109,40,217,0.1)] space-y-8 sticky top-8">
-              <div className="flex justify-between items-center pb-4 border-b border-purple-900">
-                <h3 className="text-xl font-bold flex items-center gap-2 text-neutral-50">
-                  <SlidersHorizontal size={20} className="text-purple-400" />
+            <div className="bg-white/80 backdrop-blur-md p-6 rounded-3xl shadow-2xl space-y-8 sticky top-8 border border-white/20">
+              <div className="flex justify-between items-center pb-4 border-b border-purple-100">
+                <h3 className="text-xl font-bold flex items-center gap-2 text-neutral-900">
+                  <SlidersHorizontal size={20} className="text-purple-600" />
                   {isRtl ? "الفلاتر" : "Filters"}
                 </h3>
                 {hasActiveFilters && (
                   <button
                     onClick={clearFilters}
-                    className="text-sm font-medium text-rose-400 hover:text-rose-300 transition-colors"
+                    className="text-sm font-medium text-rose-600 hover:text-rose-700 transition-colors"
                   >
                     {isRtl ? "مسح الكل" : "Clear All"}
                   </button>
@@ -327,19 +320,19 @@ const SpecialGiftsPage: React.FC = () => {
               </div>
 
               {/* Price Filter */}
-              <div className="bg-neutral-800 rounded-xl p-4 border border-neutral-700">
+              <div className="bg-neutral-50 rounded-lg p-4 border border-neutral-100">
                 <button
                   onClick={() => toggleFilterExpansion("price")}
-                  className="w-full flex items-center justify-between text-sm font-bold text-neutral-50"
+                  className="w-full flex items-center justify-between text-sm font-bold text-neutral-800"
                 >
                   <span className="flex items-center gap-2">
-                    <DollarSign size={16} className="text-purple-400" />
+                    <DollarSign size={16} className="text-purple-600" />
                     {isRtl ? "نطاق السعر" : "Price Range"}
                   </span>
                   {expandedFilters.includes("price") ? (
-                    <ChevronUp size={16} className="text-neutral-400" />
+                    <ChevronUp size={16} className="text-neutral-500" />
                   ) : (
-                    <ChevronDown size={16} className="text-neutral-400" />
+                    <ChevronDown size={16} className="text-neutral-500" />
                   )}
                 </button>
                 <AnimatePresence>
@@ -353,7 +346,7 @@ const SpecialGiftsPage: React.FC = () => {
                       {priceRanges.map((option) => (
                         <label
                           key={option.id}
-                          className="flex items-center gap-3 text-sm text-neutral-300 cursor-pointer hover:text-purple-300 transition-colors"
+                          className="flex items-center gap-3 text-sm text-neutral-700 cursor-pointer hover:text-purple-600 transition-colors"
                         >
                           <input
                             type="radio"
@@ -368,13 +361,13 @@ const SpecialGiftsPage: React.FC = () => {
                                 option.range[1]
                               )
                             }
-                            className="rounded-full border-neutral-600 bg-neutral-700 text-purple-500 focus:ring-purple-500 w-4 h-4"
+                            className="rounded-full border-neutral-300 text-purple-500 focus:ring-purple-500 w-4 h-4"
                           />
                           <span className="font-medium flex items-center gap-1">
                             {option.label}
-                            <RiyalSymbol className="w-3.5 h-3.5 text-neutral-300" />
+                            <RiyalSymbol className="w-3.5 h-3.5 text-neutral-700" />
                           </span>
-                          <span className="text-xs text-neutral-500 font-normal">
+                          <span className="text-xs text-neutral-400 font-normal">
                             ({option.count})
                           </span>
                         </label>
@@ -385,19 +378,19 @@ const SpecialGiftsPage: React.FC = () => {
               </div>
 
               {/* Features Filter */}
-              <div className="bg-neutral-800 rounded-xl p-4 border border-neutral-700">
+              <div className="bg-neutral-50 rounded-lg p-4 border border-neutral-100">
                 <button
                   onClick={() => toggleFilterExpansion("features")}
-                  className="w-full flex items-center justify-between text-sm font-bold text-neutral-50"
+                  className="w-full flex items-center justify-between text-sm font-bold text-neutral-800"
                 >
                   <span className="flex items-center gap-2">
-                    <Sparkles size={16} className="text-purple-400" />
+                    <Sparkles size={16} className="text-purple-600" />
                     {isRtl ? "المميزات" : "Features"}
                   </span>
                   {expandedFilters.includes("features") ? (
-                    <ChevronUp size={16} className="text-neutral-400" />
+                    <ChevronUp size={16} className="text-neutral-500" />
                   ) : (
-                    <ChevronDown size={16} className="text-neutral-400" />
+                    <ChevronDown size={16} className="text-neutral-500" />
                   )}
                 </button>
                 <AnimatePresence>
@@ -411,7 +404,7 @@ const SpecialGiftsPage: React.FC = () => {
                       {filterOptions.features.map((feature) => (
                         <label
                           key={feature.id}
-                          className="flex items-center gap-3 text-sm text-neutral-300 cursor-pointer hover:text-purple-300 transition-colors"
+                          className="flex items-center gap-3 text-sm text-neutral-700 cursor-pointer hover:text-purple-600 transition-colors"
                         >
                           <input
                             type="checkbox"
@@ -419,12 +412,12 @@ const SpecialGiftsPage: React.FC = () => {
                             onChange={() =>
                               toggleArrayFilter("features", feature.id)
                             }
-                            className="rounded border-neutral-600 bg-neutral-700 text-purple-500 focus:ring-purple-500 w-4 h-4"
+                            className="rounded border-neutral-300 text-purple-500 focus:ring-purple-500 w-4 h-4"
                           />
                           <span className="font-medium flex items-center gap-2">
                             {feature.icon} {feature.nameKey}
                           </span>
-                          <span className="text-xs text-neutral-500 font-normal">
+                          <span className="text-xs text-neutral-400 font-normal">
                             ({feature.count})
                           </span>
                         </label>
@@ -442,7 +435,7 @@ const SpecialGiftsPage: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="bg-neutral-900/50 backdrop-blur-lg border border-neutral-800 p-5 rounded-3xl shadow-[0_0_40px_rgba(109,40,217,0.1)] mb-6 relative z-20"
+              className="bg-white/80 backdrop-blur-md p-5 rounded-3xl shadow-2xl border border-white/20 mb-6 relative z-20"
             >
               <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                 {/* Search Bar */}
@@ -451,7 +444,7 @@ const SpecialGiftsPage: React.FC = () => {
                     size={16}
                     className={`absolute ${
                       isRtl ? "right-3" : "left-3"
-                    } top-1/2 -translate-y-1/2 text-purple-500`}
+                    } top-1/2 -translate-y-1/2 text-purple-400`}
                   />
                   <input
                     type="text"
@@ -460,14 +453,14 @@ const SpecialGiftsPage: React.FC = () => {
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className={`w-full ${
                       isRtl ? "pr-10 pl-4" : "pl-10 pr-4"
-                    } py-2.5 bg-neutral-800 rounded-full border border-neutral-700 focus:outline-none focus:ring-2 focus:ring-purple-600 text-sm placeholder-neutral-500 text-neutral-50`}
+                    } py-2.5 bg-purple-50 rounded-full border border-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-600 text-sm placeholder-purple-400`}
                   />
                   {searchTerm && (
                     <button
                       onClick={() => setSearchTerm("")}
                       className={`absolute ${
                         isRtl ? "left-3" : "right-3"
-                      } top-1/2 -translate-y-1/2 text-neutral-500 hover:text-purple-400`}
+                      } top-1/2 -translate-y-1/2 text-purple-400 hover:text-purple-600`}
                     >
                       <X size={16} />
                     </button>
@@ -494,12 +487,12 @@ const SpecialGiftsPage: React.FC = () => {
                   <div className="relative z-30" ref={sortDropdownRef}>
                     <button
                       onClick={() => setShowSortOptions(!showSortOptions)}
-                      className="flex items-center gap-2 px-4 py-2.5 bg-neutral-800 rounded-full border border-neutral-700 text-sm font-medium hover:bg-neutral-700 transition-colors text-neutral-50"
+                      className="flex items-center gap-2 px-4 py-2.5 bg-purple-50 rounded-full border border-purple-200 text-sm font-medium hover:bg-purple-100 transition-colors"
                     >
                       <span className="hidden sm:inline">
                         {isRtl ? "ترتيب حسب: " : "Sort by: "}
                       </span>
-                      <span className="font-bold text-purple-400">
+                      <span className="font-bold text-purple-600">
                         {getSortLabel(filters.sortBy)}
                       </span>
                       <ChevronDown size={16} className="text-purple-400" />
@@ -511,7 +504,7 @@ const SpecialGiftsPage: React.FC = () => {
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -10 }}
                           transition={{ duration: 0.2 }}
-                          className={`absolute w-48 mt-2 bg-neutral-800 rounded-xl shadow-lg border border-neutral-700 ${
+                          className={`absolute w-48 mt-2 bg-white rounded-xl shadow-lg border border-purple-200 bg-opacity-100 ${
                             isRtl ? "left-0" : "right-0"
                           } overflow-hidden`}
                         >
@@ -524,10 +517,10 @@ const SpecialGiftsPage: React.FC = () => {
                               }}
                               className={`w-full ${
                                 isRtl ? "text-right" : "text-left"
-                              } px-4 py-2 text-sm font-medium hover:bg-neutral-700 transition-colors ${
+                              } px-4 py-2 text-sm font-medium hover:bg-purple-50 transition-colors ${
                                 filters.sortBy === option.value
-                                  ? "bg-neutral-700 text-purple-400"
-                                  : "text-neutral-300"
+                                  ? "bg-purple-50 text-purple-600"
+                                  : "text-neutral-700"
                               }`}
                             >
                               {option.label}
@@ -539,13 +532,13 @@ const SpecialGiftsPage: React.FC = () => {
                   </div>
 
                   {/* View Mode Toggles */}
-                  <div className="hidden sm:flex bg-neutral-800 rounded-full p-1 border border-neutral-700">
+                  <div className="hidden sm:flex bg-purple-200 rounded-full p-1">
                     <button
                       onClick={() => setViewMode("grid")}
                       className={`p-2 rounded-full transition-colors ${
                         viewMode === "grid"
-                          ? "bg-purple-600 text-white shadow-sm"
-                          : "text-purple-400 hover:bg-neutral-700"
+                          ? "bg-white text-purple-600 shadow-sm"
+                          : "text-purple-500 hover:bg-purple-300"
                       }`}
                     >
                       <Grid size={16} />
@@ -554,8 +547,8 @@ const SpecialGiftsPage: React.FC = () => {
                       onClick={() => setViewMode("list")}
                       className={`p-2 rounded-full transition-colors ${
                         viewMode === "list"
-                          ? "bg-purple-600 text-white shadow-sm"
-                          : "text-purple-400 hover:bg-neutral-700"
+                          ? "bg-white text-purple-600 shadow-sm"
+                          : "text-purple-500 hover:bg-purple-300"
                       }`}
                     >
                       <List size={16} />
@@ -589,13 +582,13 @@ const SpecialGiftsPage: React.FC = () => {
                     {filteredProducts.map((product, index) => (
                       <div
                         key={product.id}
-                        className="bg-neutral-900/50 backdrop-blur-lg rounded-2xl shadow-[0_0_40px_rgba(109,40,217,0.1)] border border-neutral-800 overflow-hidden relative transition-all duration-300 flex flex-col w-full group hover:border-purple-600"
+                        className="bg-white rounded-2xl shadow-md border border-neutral-100 overflow-hidden relative transition-all duration-300 flex flex-col w-full"
                       >
                         <Link
                           to={`/product/${product.id}`}
                           className="block flex-1"
                         >
-                          <div className="relative aspect-square overflow-hidden">
+                          <div className="relative aspect-square overflow-hidden group">
                             <ProductImage
                               src={product.imageUrl}
                               alt={isRtl ? product.nameAr : product.nameEn}
@@ -629,7 +622,8 @@ const SpecialGiftsPage: React.FC = () => {
                             </div>
                           </div>
                         </Link>
-                        <div className="relative p-3 bg-neutral-900/50 border-t border-neutral-800">
+                        <div className="relative p-3 bg-gradient-to-b from-white to-purple-50 border-t border-neutral-100">
+                          {/* Favorite button positioned on the border */}
                           <div
                             className={`absolute top-0 -translate-y-1/2 ${
                               isRtl ? "right-3" : "left-3"
@@ -637,25 +631,25 @@ const SpecialGiftsPage: React.FC = () => {
                           >
                             <FavoriteButton
                               product={product}
-                              className="w-9 h-9 bg-neutral-800 rounded-full shadow-lg flex items-center justify-center text-rose-500 border border-neutral-700 transition-all duration-300 hover:scale-110"
+                              className="w-9 h-9 bg-white rounded-full shadow-lg flex items-center justify-center text-rose-500 border border-neutral-200 transition-all duration-300 hover:scale-110"
                               size={16}
                             />
                           </div>
                           <Link to={`/product/${product.id}`}>
-                            <h3 className="text-sm font-bold text-neutral-50 hover:text-purple-400 transition-colors line-clamp-1 mt-1 mb-1">
+                            <h3 className="text-sm font-bold text-neutral-800 hover:text-purple-600 transition-colors line-clamp-1 mt-1 mb-1">
                               {isRtl ? product.nameAr : product.nameEn}
                             </h3>
                           </Link>
-                          <div className="flex items-center justify-between mt-2">
-                            <p className="text-base font-bold text-purple-400 flex items-center gap-1">
+                          <div className="flex items-center justify-between">
+                            <p className="text-base font-bold text-purple-700 flex items-center gap-1">
                               {isRtl ? (
                                 <>
                                   {product.price}
-                                  <RiyalSymbol className="w-3.5 h-3.5 text-purple-400" />
+                                  <RiyalSymbol className="w-3.5 h-3.5 text-purple-700" />
                                 </>
                               ) : (
                                 <>
-                                  <RiyalSymbol className="w-3.5 h-3.5 text-purple-400" />
+                                  <RiyalSymbol className="w-3.5 h-3.5 text-purple-700" />
                                   {product.price}
                                 </>
                               )}
@@ -683,7 +677,7 @@ const SpecialGiftsPage: React.FC = () => {
                     {filteredProducts.map((product, index) => (
                       <div
                         key={product.id}
-                        className="bg-neutral-900/50 backdrop-blur-lg rounded-xl shadow-[0_0_40px_rgba(109,40,217,0.1)] border border-neutral-800 p-4 flex flex-col sm:flex-row gap-4 items-start transition-all duration-300 hover:border-purple-600"
+                        className="bg-white rounded-xl shadow-md border border-neutral-100 p-4 flex flex-col sm:flex-row gap-4 items-start transition-all duration-300"
                       >
                         <Link
                           to={`/product/${product.id}`}
@@ -708,13 +702,13 @@ const SpecialGiftsPage: React.FC = () => {
                           <div>
                             <div className="flex justify-between items-center mb-1">
                               <Link to={`/product/${product.id}`}>
-                                <h3 className="text-base font-bold text-neutral-50 hover:text-purple-400 transition-colors">
+                                <h3 className="text-base font-bold text-neutral-800 hover:text-purple-600 transition-colors">
                                   {isRtl ? product.nameAr : product.nameEn}
                                 </h3>
                               </Link>
                               <FavoriteButton
                                 product={product}
-                                className="bg-neutral-800 rounded-full p-2 text-rose-500 hover:bg-neutral-700 transition-colors"
+                                className="bg-neutral-100 rounded-full p-2 text-rose-500 hover:bg-neutral-200 transition-colors"
                                 size={16}
                               />
                             </div>
@@ -735,22 +729,22 @@ const SpecialGiftsPage: React.FC = () => {
                                 </span>
                               )}
                             </div>
-                            <p className="text-sm text-neutral-400 line-clamp-2">
+                            <p className="text-sm text-neutral-600 line-clamp-2">
                               {isRtl
                                 ? product.descriptionAr
                                 : product.descriptionEn}
                             </p>
                           </div>
                           <div className="flex items-center justify-between mt-3">
-                            <p className="text-lg font-bold text-purple-400 flex items-center gap-1">
+                            <p className="text-lg font-bold text-purple-700 flex items-center gap-1">
                               {isRtl ? (
                                 <>
                                   {product.price}
-                                  <RiyalSymbol className="w-4 h-4 text-purple-400" />
+                                  <RiyalSymbol className="w-4 h-4 text-purple-700" />
                                 </>
                               ) : (
                                 <>
-                                  <RiyalSymbol className="w-4 h-4 text-purple-400" />
+                                  <RiyalSymbol className="w-4 h-4 text-purple-700" />
                                   {product.price}
                                 </>
                               )}
@@ -773,15 +767,15 @@ const SpecialGiftsPage: React.FC = () => {
                   key="no-products"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="text-center py-20 bg-neutral-900/50 backdrop-blur-lg rounded-2xl shadow-[0_0_40px_rgba(109,40,217,0.1)] border border-neutral-800"
+                  className="text-center py-20 bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-white/20"
                 >
-                  <div className="w-24 h-24 bg-neutral-800 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <div className="w-24 h-24 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
                     <Search size={40} className="text-purple-400" />
                   </div>
-                  <h3 className="text-2xl font-bold text-neutral-50 mb-3">
+                  <h3 className="text-2xl font-bold text-neutral-900 mb-3">
                     {isRtl ? "لا توجد هدايا" : "No Gifts Found"}
                   </h3>
-                  <p className="text-neutral-400 mb-8 text-sm max-w-sm mx-auto">
+                  <p className="text-neutral-600 mb-8 text-sm max-w-sm mx-auto">
                     {isRtl
                       ? "لا توجد هدايا تطابق معايير البحث. جرب تعديل الفلاتر أو مسحها."
                       : "No gifts match your search criteria. Try adjusting or clearing filters."}
@@ -807,7 +801,7 @@ const SpecialGiftsPage: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/80"
+            className="fixed inset-0 z-50 bg-black/60" // إزالة backdrop-blur-sm
             onClick={() => setShowMobileFilters(false)}
           >
             <motion.div
@@ -816,17 +810,17 @@ const SpecialGiftsPage: React.FC = () => {
               exit={{ x: isRtl ? "100%" : "-100%" }}
               className={`fixed inset-y-0 ${
                 isRtl ? "right-0" : "left-0"
-              } w-full sm:w-80 bg-neutral-900 border-l border-neutral-800 shadow-2xl overflow-y-auto p-6 transition-transform duration-300 ease-in-out`}
+              } w-full sm:w-80 bg-white shadow-2xl overflow-y-auto p-6 transition-transform duration-300 ease-in-out`}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between mb-6 pb-4 border-b border-neutral-800">
-                <h3 className="flex items-center gap-2 text-2xl font-bold text-neutral-50">
-                  <Filter size={20} className="text-purple-400" />
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-neutral-200">
+                <h3 className="flex items-center gap-2 text-2xl font-bold text-neutral-900">
+                  <Filter size={20} className="text-purple-600" />
                   {isRtl ? "فلاتر البحث" : "Search Filters"}
                 </h3>
                 <button
                   onClick={() => setShowMobileFilters(false)}
-                  className="p-2 rounded-full text-neutral-400 hover:bg-neutral-800 transition-colors"
+                  className="p-2 rounded-full text-neutral-600 hover:bg-neutral-100 transition-colors"
                 >
                   <X size={20} />
                 </button>
@@ -835,15 +829,15 @@ const SpecialGiftsPage: React.FC = () => {
               <div className="space-y-6">
                 {/* Price Filter (Mobile) */}
                 <div>
-                  <h4 className="flex items-center gap-2 text-lg font-semibold mb-3 text-neutral-50">
-                    <DollarSign size={18} className="text-purple-400" />
+                  <h4 className="flex items-center gap-2 text-lg font-semibold mb-3">
+                    <DollarSign size={18} className="text-purple-600" />
                     {isRtl ? "نطاق السعر" : "Price Range"}
                   </h4>
                   <div className="space-y-3">
                     {priceRanges.map((option) => (
                       <label
                         key={option.id}
-                        className="flex items-center gap-3 text-neutral-300 cursor-pointer"
+                        className="flex items-center gap-3 text-neutral-700 cursor-pointer"
                       >
                         <input
                           type="radio"
@@ -858,11 +852,11 @@ const SpecialGiftsPage: React.FC = () => {
                               option.range[1]
                             )
                           }
-                          className="form-radio text-purple-600 bg-neutral-800 border-neutral-700 focus:ring-purple-600 w-5 h-5"
+                          className="form-radio text-purple-600 bg-purple-50 border-purple-200 focus:ring-purple-600 w-5 h-5"
                         />
                         <span className="font-medium flex items-center gap-1">
                           {option.label}
-                          <RiyalSymbol className="w-3.5 h-3.5 text-neutral-300" />
+                          <RiyalSymbol className="w-3.5 h-3.5 text-neutral-700" />
                         </span>
                       </label>
                     ))}
@@ -871,15 +865,15 @@ const SpecialGiftsPage: React.FC = () => {
 
                 {/* Features Filter (Mobile) */}
                 <div>
-                  <h4 className="flex items-center gap-2 text-lg font-semibold mb-3 text-neutral-50">
-                    <Sparkles size={18} className="text-purple-400" />
+                  <h4 className="flex items-center gap-2 text-lg font-semibold mb-3">
+                    <Sparkles size={18} className="text-purple-600" />
                     {isRtl ? "المميزات" : "Features"}
                   </h4>
                   <div className="space-y-3">
                     {filterOptions.features.map((feature) => (
                       <label
                         key={feature.id}
-                        className="flex items-center gap-3 text-neutral-300 cursor-pointer"
+                        className="flex items-center gap-3 text-neutral-700 cursor-pointer"
                       >
                         <input
                           type="checkbox"
@@ -887,7 +881,7 @@ const SpecialGiftsPage: React.FC = () => {
                           onChange={() =>
                             toggleArrayFilter("features", feature.id)
                           }
-                          className="form-checkbox rounded-md text-purple-600 bg-neutral-800 border-neutral-700 focus:ring-purple-600 w-5 h-5"
+                          className="form-checkbox rounded-md text-purple-600 bg-purple-50 border-purple-200 focus:ring-purple-600 w-5 h-5"
                         />
                         <span className="font-medium flex items-center gap-2">
                           {feature.icon} {feature.nameKey}
@@ -899,16 +893,16 @@ const SpecialGiftsPage: React.FC = () => {
               </div>
 
               {/* Action Buttons */}
-              <div className="mt-8 pt-6 border-t border-neutral-800 space-y-3">
-                <div className="text-center text-sm text-neutral-400 font-medium">
-                  <span className="font-bold text-neutral-50">
+              <div className="mt-8 pt-6 border-t border-neutral-200 space-y-3">
+                <div className="text-center text-sm text-neutral-600 font-medium">
+                  <span className="font-bold text-neutral-900">
                     {filteredProducts.length}
                   </span>{" "}
-                  {isRtl ? "هدايا موجودة" : "gifts found"}
+                  {isRtl ? "هدية موجودة" : "gifts found"}
                 </div>
                 <button
                   onClick={clearFilters}
-                  className="w-full px-4 py-3 bg-neutral-800 text-rose-400 rounded-full hover:bg-neutral-700 transition-colors flex items-center justify-center gap-2 font-bold text-sm shadow-sm"
+                  className="w-full px-4 py-3 bg-rose-50 text-rose-700 rounded-full hover:bg-rose-100 transition-colors flex items-center justify-center gap-2 font-bold text-sm shadow-sm"
                 >
                   <X size={16} />
                   {isRtl ? "مسح الفلاتر" : "Clear Filters"}
