@@ -36,7 +36,7 @@ const ShippingDeliverySection: React.FC = () => {
 
   return (
     <section className="py-3 sm:py-12 text-gray-900">
-      <div className="container-custom px-4 sm:px-6 mx-auto">
+      <div className="container-custom px-4 sm:px-16 mx-auto">
         <div className="flex flex-col lg:grid lg:grid-cols-2 gap-8 md:gap-12 items-center">
           {/* Content */}
           <div className={`${isRtl ? "lg:order-2" : "lg:order-1"} w-full`}>

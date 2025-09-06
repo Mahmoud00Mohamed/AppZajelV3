@@ -19,7 +19,7 @@ const MagicGiftSection: React.FC = () => {
         minHeight: "600px",
       }}
     >
-      <div className="container-custom px-4 sm:px-6">
+      <div className="container-custom px-4 sm:px-16">
         <div className="relative p-6 md:p-10 text-center overflow-hidden">
           <div className="relative z-10">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-6">

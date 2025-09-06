@@ -45,17 +45,31 @@ const FeaturedCollectionsSection: React.FC = () => {
   const nextDirection = isRtl ? "left" : "right";
 
   return (
-    <section className="py-3 sm:py-12">
-      <div className="container-custom px-4 sm:px-6">
-        <div className="text-center mb-10">
-          <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl font-medium text-purple-800 leading-tight">
+    <section className="py-3">
+      <div className="container-custom px-4 sm:px-16">
+        <div className="relative text-center my-10">
+          <h2
+            className={`
+    relative z-10 inline-flex items-center justify-center
+    bg-purple-600 text-white px-5 py-2 text-xl font-bold
+    ${i18n.language === "ar" ? "font-tajawal" : "font-poppins"}
+    rounded-md
+  `}
+          >
+            <span
+              className="absolute left-0 -ml-2 w-0 h-0
+                     border-t-[10px] border-b-[10px] border-r-[10px]
+                     border-t-transparent border-b-transparent border-r-purple-600"
+            ></span>
+
             {t("home.featuredCollections.title")}
+
+            <span
+              className="absolute right-0 -mr-2 w-0 h-0
+                     border-t-[10px] border-b-[10px] border-l-[10px]
+                     border-t-transparent border-b-transparent border-l-purple-600"
+            ></span>
           </h2>
-          <p className="mt-2.5 text-sm sm:text-base max-w-xs sm:max-w-md md:max-w-lg mx-auto leading-relaxed">
-            {isRtl
-              ? "استكشف مجموعاتنا المميزة من الهدايا الخاصة."
-              : "Explore our curated collection of special gifts."}
-          </p>
         </div>
 
         <div className="relative">
