@@ -70,7 +70,7 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({
           ? "text-red-500 hover:text-red-600"
           : "text-gray-400 hover:text-red-500"
       } ${className}`}
-      whileHover={{ scale: 1.1 }}
+      whileHover={{ scale: 1 }}
       whileTap={{ scale: 0.9 }}
       aria-label={
         isProductFavorite

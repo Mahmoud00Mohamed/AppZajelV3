@@ -28,19 +28,19 @@ const Header = () => {
   const { cartCount, syncCart } = useCart();
   const { favoritesCount } = useFavorites();
   const { user, isAuthenticated, logout } = useAuth();
-  const userMenuRef = useRef<HTMLDivElement>(null); // ✅ جديد
+  const userMenuRef = useRef<HTMLDivElement>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const location = useLocation();
 
   const isRtl = i18n.language === "ar";
 
-  // Sync cart when user logs in
   useEffect(() => {
     if (isAuthenticated) {
       syncCart();
     }
   }, [isAuthenticated, syncCart]);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -60,7 +60,8 @@ const Header = () => {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [showUserMenu]); // ✅ جديد
+  }, [showUserMenu]);
+
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
@@ -68,7 +69,7 @@ const Header = () => {
   return (
     <header className="w-full bg-white shadow-sm sticky top-0 z-50">
       {/* Top announcement bar */}
-      <div className="bg-gradient-to-r from-purple-600 to-pink-500 text-white py-1.5">
+      <div className="bg-violet-500 text-white py-1.5">
         <div
           className={`container-custom flex items-center ${
             isRtl ? "justify-end flex-row-reverse" : "justify-start flex-row"
@@ -119,9 +120,9 @@ const Header = () => {
               <input
                 type="text"
                 placeholder={t("header.search")}
-                className="w-full bg-gray-50/80 border border-gray-200/60 py-3 px-5 pl-12 rounded-full text-gray-700 placeholder-gray-400 outline-none transition-all duration-500 focus:bg-white focus:border-purple-500 focus:shadow-lg focus:shadow-purple-100/30 hover:bg-white/80 backdrop-blur-sm"
+                className="w-full bg-gray-50/80 border border-gray-200/60 py-3 px-5 pl-12 rounded-full text-black placeholder-gray-400 outline-none transition-all duration-500 focus:bg-white focus:border-violet-500 focus:shadow-lg focus:shadow-violet-100/30 hover:bg-white/80 backdrop-blur-sm"
               />
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-purple-500 transition-colors duration-300">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-violet-700 transition-colors duration-300">
                 <Search size={18} strokeWidth={1.5} />
               </div>
             </div>
@@ -135,8 +136,8 @@ const Header = () => {
                 onClick={() => i18n.changeLanguage("ar")}
                 className={`px-3 py-1.5 text-xs font-bold rounded-full transition-all duration-300 ${
                   i18n.language === "ar"
-                    ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md"
-                    : "text-gray-600 hover:text-purple-600 hover:bg-purple-50"
+                    ? "bg-violet-500 text-white shadow-md"
+                    : "text-gray-600 hover:text-violet-600 hover:bg-violet-50"
                 }`}
               >
                 العربية
@@ -145,8 +146,8 @@ const Header = () => {
                 onClick={() => i18n.changeLanguage("en")}
                 className={`px-3 py-1.5 text-xs font-bold rounded-full transition-all duration-300 ${
                   i18n.language === "en"
-                    ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md"
-                    : "text-gray-600 hover:text-purple-600 hover:bg-purple-50"
+                    ? "bg-violet-500 text-white shadow-md"
+                    : "text-gray-600 hover:text-violet-600 hover:bg-violet-50"
                 }`}
               >
                 EN
@@ -156,12 +157,12 @@ const Header = () => {
             {/* Notifications */}
             <Link
               to="/notifications"
-              className="hidden md:flex items-center text-gray-600 hover:text-purple-600 transition-all relative group"
+              className="hidden md:flex items-center text-gray-600 hover:text-violet-600 transition-all relative group"
             >
-              <div className="p-2 bg-gray-100 hover:bg-purple-100 rounded-full transition-colors">
+              <div className="p-2 bg-gray-100 hover:bg-violet-100 rounded-full transition-colors">
                 <Bell size={18} />
               </div>
-              <span className="hidden lg:inline text-xs font-medium ml-1.5 rtl:mr-1.5 text-gray-700">
+              <span className="hidden lg:inline text-xs font-medium ml-1.5 rtl:mr-1.5 text-black">
                 {t("bottomNav.notifications")}
               </span>
               <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
@@ -170,16 +171,16 @@ const Header = () => {
             {/* Favorites */}
             <Link
               to="/favorites"
-              className="relative hidden md:flex items-center text-gray-600 hover:text-purple-600 transition-all group"
+              className="relative hidden md:flex items-center text-gray-600 hover:text-rose-600 transition-all group"
             >
-              <div className="p-2 bg-gray-100 hover:bg-pink-100 rounded-full transition-colors">
+              <div className="p-2 bg-gray-100 hover:bg-rose-100 rounded-full transition-colors">
                 <Heart size={18} />
               </div>
-              <span className="hidden lg:inline text-xs font-medium ml-1.5 rtl:mr-1.5 text-gray-700">
+              <span className="hidden lg:inline text-xs font-medium ml-1.5 rtl:mr-1.5 text-black">
                 {t("bottomNav.favorites")}
               </span>
               {isAuthenticated && favoritesCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold">
+                <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold">
                   {favoritesCount > 99 ? "99+" : favoritesCount}
                 </span>
               )}
@@ -188,12 +189,12 @@ const Header = () => {
             {/* Packages */}
             <Link
               to="/packages"
-              className="hidden md:flex items-center text-gray-600 hover:text-purple-600 transition-all group"
+              className="hidden md:flex items-center text-gray-600 hover:text-violet-600 transition-all group"
             >
-              <div className="p-2 bg-gray-100 hover:bg-blue-100 rounded-full transition-colors">
+              <div className="p-2 bg-gray-100 hover:bg-violet-100 rounded-full transition-colors">
                 <Package size={18} />
               </div>
-              <span className="hidden lg:inline text-xs font-medium ml-1.5 rtl:mr-1.5 text-gray-700">
+              <span className="hidden lg:inline text-xs font-medium ml-1.5 rtl:mr-1.5 text-black">
                 {t("bottomNav.packages")}
               </span>
             </Link>
@@ -203,16 +204,16 @@ const Header = () => {
               <div className="relative hidden sm:block" ref={userMenuRef}>
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex items-center text-gray-700 hover:text-purple-600 transition-all group"
+                  className="flex items-center text-black hover:text-violet-600 transition-all group"
                 >
                   {user?.profilePicture ? (
                     <img
                       src={user.profilePicture}
                       alt={user.name}
-                      className="w-9 h-9 rounded-full object-cover ring-2 ring-purple-100"
+                      className="w-9 h-9 rounded-full object-cover ring-2 ring-violet-100"
                     />
                   ) : (
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white text-sm font-bold">
+                    <div className="w-9 h-9 rounded-full bg-violet-500 flex items-center justify-center text-white text-sm font-bold">
                       {user?.name?.charAt(0).toUpperCase()}
                     </div>
                   )}
@@ -241,7 +242,7 @@ const Header = () => {
                     )}
                     <Link
                       to="/profile"
-                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      className="flex items-center px-4 py-2 text-sm text-black hover:bg-gray-50 transition-colors"
                       onClick={() => setShowUserMenu(false)}
                     >
                       <User size={16} className="mr-2 rtl:ml-2" />
@@ -249,7 +250,7 @@ const Header = () => {
                     </Link>
                     <Link
                       to="/orders"
-                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      className="flex items-center px-4 py-2 text-sm text-black hover:bg-gray-50 transition-colors"
                       onClick={() => setShowUserMenu(false)}
                     >
                       <Package size={16} className="mr-2 rtl:ml-2" />
@@ -285,12 +286,12 @@ const Header = () => {
             ) : (
               <Link
                 to="/auth/login"
-                className="hidden sm:flex items-center text-gray-600 hover:text-purple-600 transition-all group"
+                className="hidden sm:flex items-center text-gray-600 hover:text-violet-600 transition-all group"
               >
-                <div className="p-2 bg-gray-100 hover:bg-purple-100 rounded-full transition-colors">
+                <div className="p-2 bg-gray-100 hover:bg-violet-100 rounded-full transition-colors">
                   <User size={18} />
                 </div>
-                <span className="text-xs font-medium ml-1.5 rtl:mr-1.5 text-gray-700">
+                <span className="text-xs font-medium ml-1.5 rtl:mr-1.5 text-black">
                   {t("header.login")}
                 </span>
               </Link>
@@ -299,13 +300,13 @@ const Header = () => {
             {/* Cart */}
             <Link
               to="/cart"
-              className="relative flex items-center text-gray-600 hover:text-purple-600 transition-all group"
+              className="relative flex items-center text-gray-600 hover:text-violet-600 transition-all group"
             >
-              <div className="p-2 bg-gray-100 hover:bg-purple-100 rounded-full transition-colors">
+              <div className="p-2 bg-gray-100 hover:bg-violet-100 rounded-full transition-colors">
                 <ShoppingBasket size={20} />
               </div>
               {isAuthenticated && cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 rtl:-left-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold animate-bounce">
+                <span className="absolute -top-1 -right-1 rtl:-left-1 bg-violet-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold animate-bounce">
                   {cartCount > 99 ? "99+" : cartCount}
                 </span>
               )}
@@ -322,7 +323,7 @@ const Header = () => {
             <input
               type="text"
               placeholder={t("header.search")}
-              className="w-full bg-gray-50/80 border border-gray-200/60 py-3 px-5 pl-12 rounded-full text-gray-700 placeholder-gray-400 outline-none transition-all duration-500 focus:bg-white focus:border-purple-500 focus:shadow-lg focus:shadow-purple-100/30 backdrop-blur-sm"
+              className="w-full bg-gray-50/80 border border-gray-200/60 py-3 px-5 pl-12 rounded-full text-black placeholder-gray-400 outline-none transition-all duration-500 focus:bg-white focus:border-violet-500 focus:shadow-lg focus:shadow-violet-100/30 backdrop-blur-sm"
             />
             <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
               <Search size={18} strokeWidth={1.5} />
@@ -332,16 +333,16 @@ const Header = () => {
       </div>
 
       {/* Navigation */}
-      <nav className="bg-white border-t border-gray-50">
+      <nav className="bg-emerald-500/10 border-t border-gray-50">
         <div className="container-custom">
-          <ul className="hidden md:flex items-center space-x-8 rtl:space-x-reverse py-3 text-gray-700">
+          <ul className="hidden md:flex items-center space-x-8 rtl:space-x-reverse py-3 text-black">
             <li>
               <Link
                 to="/categories"
                 className={`flex items-center gap-1 text-sm font-semibold transition-colors group ${
                   location.pathname === "/categories"
-                    ? "text-purple-600"
-                    : "text-gray-700 hover:text-purple-600"
+                    ? "text-violet-700"
+                    : "text-black hover:text-violet-700"
                 }`}
               >
                 {t("navigation.categories")}
@@ -356,8 +357,8 @@ const Header = () => {
                 to="/occasions"
                 className={`flex items-center gap-1 text-sm font-semibold transition-colors group ${
                   location.pathname === "/occasions"
-                    ? "text-purple-600"
-                    : "text-gray-700 hover:text-purple-600"
+                    ? "text-violet-700"
+                    : "text-black hover:text-violet-700"
                 }`}
               >
                 {t("navigation.occasions")}
@@ -372,8 +373,8 @@ const Header = () => {
                 to="/brands"
                 className={`flex items-center gap-1 text-sm font-semibold transition-colors group ${
                   location.pathname === "/brands"
-                    ? "text-purple-600"
-                    : "text-gray-700 hover:text-purple-600"
+                    ? "text-violet-700"
+                    : "text-black hover:text-violet-700"
                 }`}
               >
                 {t("navigation.brands")}
@@ -388,8 +389,8 @@ const Header = () => {
                 to="/special-gifts"
                 className={`text-sm font-semibold transition-colors ${
                   location.pathname === "/special-gifts"
-                    ? "text-purple-600"
-                    : "text-gray-700 hover:text-purple-600"
+                    ? "text-violet-700"
+                    : "text-black hover:text-violet-700"
                 }`}
               >
                 {t("navigation.specialGifts")}
@@ -400,8 +401,8 @@ const Header = () => {
                 to="/products"
                 className={`text-sm font-semibold transition-colors ${
                   location.pathname === "/products"
-                    ? "text-purple-600"
-                    : "text-gray-600 hover:text-purple-600"
+                    ? "text-violet-700"
+                    : "text-black hover:text-violet-700"
                 }`}
               >
                 {i18n.language === "ar" ? "جميع المنتجات" : "All Products"}
@@ -410,7 +411,6 @@ const Header = () => {
           </ul>
         </div>
       </nav>
-
       {/* Mobile menu */}
       <div
         className={`fixed inset-0 z-50 transition-opacity duration-300 bg-black/20 ${
@@ -445,7 +445,7 @@ const Header = () => {
               <li>
                 <Link
                   to="/categories"
-                  className="flex items-center gap-3 px-3 py-3 text-gray-700 hover:bg-purple-50 hover:text-purple-600 rounded-xl font-semibold text-sm transition-all"
+                  className="flex items-center gap-3 px-3 py-3 text-black hover:bg-violet-50 hover:text-violet-600 rounded-xl font-semibold text-sm transition-all"
                   onClick={toggleMenu}
                 >
                   <svg
@@ -456,7 +456,7 @@ const Header = () => {
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="2"
-                    className="text-purple-600"
+                    className="text-violet-600"
                   >
                     <rect x="3" y="3" width="7" height="7"></rect>
                     <rect x="14" y="3" width="7" height="7"></rect>
@@ -469,7 +469,7 @@ const Header = () => {
               <li>
                 <Link
                   to="/occasions"
-                  className="flex items-center gap-3 px-3 py-3 text-gray-700 hover:bg-purple-50 hover:text-purple-600 rounded-xl font-semibold text-sm transition-all"
+                  className="flex items-center gap-3 px-3 py-3 text-black hover:bg-violet-50 hover:text-violet-600 rounded-xl font-semibold text-sm transition-all"
                   onClick={toggleMenu}
                 >
                   <svg
@@ -493,7 +493,7 @@ const Header = () => {
               <li>
                 <Link
                   to="/brands"
-                  className="flex items-center gap-3 px-3 py-3 text-gray-700 hover:bg-purple-50 hover:text-purple-600 rounded-xl font-semibold text-sm transition-all"
+                  className="flex items-center gap-3 px-3 py-3 text-black hover:bg-violet-50 hover:text-violet-600 rounded-xl font-semibold text-sm transition-all"
                   onClick={toggleMenu}
                 >
                   <svg
@@ -515,17 +515,17 @@ const Header = () => {
               <li>
                 <Link
                   to="/special-gifts"
-                  className="flex items-center gap-3 px-3 py-3 text-purple-600 bg-purple-50 rounded-xl font-bold text-sm transition-all"
+                  className="flex items-center gap-3 px-3 py-3 text-violet-600 bg-violet-50 rounded-xl font-bold text-sm transition-all"
                   onClick={toggleMenu}
                 >
-                  <Star size={20} className="text-purple-600 fill-current" />
+                  <Star size={20} className="text-violet-600 fill-current" />
                   {t("navigation.specialGifts")}
                 </Link>
               </li>
               <li>
                 <Link
                   to="/products"
-                  className="flex items-center gap-3 px-3 py-3 text-gray-700 hover:bg-gray-50 rounded-xl font-semibold text-sm transition-all"
+                  className="flex items-center gap-3 px-3 py-3 text-black hover:bg-gray-50 rounded-xl font-semibold text-sm transition-all"
                   onClick={toggleMenu}
                 >
                   <svg
@@ -549,7 +549,7 @@ const Header = () => {
               <li className="pt-5 border-t border-gray-100">
                 <Link
                   to="/notifications"
-                  className="flex items-center gap-3 px-3 py-3 text-gray-700 hover:bg-gray-50 rounded-xl font-semibold text-sm transition-all"
+                  className="flex items-center gap-3 px-3 py-3 text-black hover:bg-violet-50 rounded-xl font-semibold text-sm transition-all"
                   onClick={toggleMenu}
                 >
                   <Bell size={18} />
@@ -559,13 +559,13 @@ const Header = () => {
               <li>
                 <Link
                   to="/favorites"
-                  className="flex items-center gap-3 px-3 py-3 text-gray-700 hover:bg-gray-50 rounded-xl font-semibold text-sm relative transition-all"
+                  className="flex items-center gap-3 px-3 py-3 text-black hover:bg-rose-50 rounded-xl font-semibold text-sm relative transition-all"
                   onClick={toggleMenu}
                 >
                   <Heart size={18} />
                   {t("bottomNav.favorites")}
                   {isAuthenticated && favoritesCount > 0 && (
-                    <span className="absolute right-3 rtl:left-3 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    <span className="absolute right-3 rtl:left-3 bg-rose-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                       {favoritesCount > 99 ? "99+" : favoritesCount}
                     </span>
                   )}
@@ -574,7 +574,7 @@ const Header = () => {
               <li>
                 <Link
                   to="/packages"
-                  className="flex items-center gap-3 px-3 py-3 text-gray-700 hover:bg-gray-50 rounded-xl font-semibold text-sm transition-all"
+                  className="flex items-center gap-3 px-3 py-3 text-black hover:bg-violet-50 rounded-xl font-semibold text-sm transition-all"
                   onClick={toggleMenu}
                 >
                   <Package size={18} />
@@ -586,7 +586,7 @@ const Header = () => {
                 <li className="pt-5 border-t border-gray-100">
                   <Link
                     to="/auth/login"
-                    className="flex items-center gap-3 px-3 py-3 text-gray-700 hover:bg-gray-50 rounded-xl font-semibold text-sm transition-all"
+                    className="flex items-center gap-3 px-3 py-3 text-black hover:bg-violet-50 rounded-xl font-semibold text-sm transition-all"
                     onClick={toggleMenu}
                   >
                     <User size={18} />
@@ -598,7 +598,7 @@ const Header = () => {
                   <li className="pt-5 border-t border-gray-100">
                     <Link
                       to="/profile"
-                      className="flex items-center gap-3 px-3 py-3 text-gray-700 hover:bg-gray-50 rounded-xl font-semibold text-sm transition-all"
+                      className="flex items-center gap-3 px-3 py-3 text-black hover:bg-gray-50 rounded-xl font-semibold text-sm transition-all"
                       onClick={toggleMenu}
                     >
                       <User size={18} />

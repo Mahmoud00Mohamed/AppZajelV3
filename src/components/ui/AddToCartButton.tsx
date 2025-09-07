@@ -26,12 +26,11 @@ const AddToCartButton: React.FC<AddToCartButtonProps> = ({
   className = "",
   size = "md",
   variant = "primary",
-  showLabel = true,
   quantity = 1,
 }) => {
   const { addToCart } = useCart();
   const { showError } = useToast();
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const { isAuthenticated } = useAuth();
   const isRtl = i18n.language === "ar";
   const [isAdding, setIsAdding] = useState(false);
@@ -44,9 +43,9 @@ const AddToCartButton: React.FC<AddToCartButtonProps> = ({
   };
 
   const variantClasses = {
-    primary: "bg-primary text-white hover:bg-primary-dark",
+    primary: "bg-primary text-white hover:bg-violet-700",
     secondary: "bg-white text-primary border border-primary hover:bg-primary/5",
-    icon: "p-2 bg-primary text-white hover:bg-primary-dark rounded-full",
+    icon: "p-2 bg-primary text-white hover:bg-violet-700 rounded-full",
   };
 
   const handleAddToCart = async (e: React.MouseEvent) => {
@@ -99,9 +98,6 @@ const AddToCartButton: React.FC<AddToCartButtonProps> = ({
           className="flex items-center gap-2"
         >
           <Check size={variant === "icon" ? 18 : 16} />
-          {showLabel && variant !== "icon" && (
-            <span>{isRtl ? "تم الإضافة" : "Added!"}</span>
-          )}
         </motion.div>
       );
     }
@@ -114,9 +110,6 @@ const AddToCartButton: React.FC<AddToCartButtonProps> = ({
           className="flex items-center gap-2"
         >
           <ShoppingCart size={variant === "icon" ? 18 : 16} />
-          {showLabel && variant !== "icon" && (
-            <span>{isRtl ? "جاري الإضافة..." : "Adding..."}</span>
-          )}
         </motion.div>
       );
     }
@@ -124,9 +117,6 @@ const AddToCartButton: React.FC<AddToCartButtonProps> = ({
     return (
       <div className="flex items-center gap-2">
         <ShoppingCart size={variant === "icon" ? 18 : 16} />
-        {showLabel && variant !== "icon" && (
-          <span>{t("product.addToCart")}</span>
-        )}
       </div>
     );
   };
