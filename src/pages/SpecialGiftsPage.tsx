@@ -9,12 +9,12 @@ import {
   SlidersHorizontal,
   X,
   ChevronDown,
-  ChevronUp,
   Flame,
   Crown,
   Sparkles,
   Tag,
   DollarSign,
+  Gift,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getSpecialGifts } from "../data";
@@ -67,10 +67,7 @@ const SpecialGiftsPage: React.FC = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [showSortOptions, setShowSortOptions] = useState(false);
 
-  const [expandedFilters, setExpandedFilters] = useState<string[]>([
-    "price",
-    "features",
-  ]);
+  const [activeFilterTab, setActiveFilterTab] = useState("price"); // For tabbed filters
 
   const specialGiftsData: Product[] = useMemo(() => getSpecialGifts(), []);
   const imageUrls = useMemo(
@@ -268,18 +265,10 @@ const SpecialGiftsPage: React.FC = () => {
     return sortOption ? sortOption.label : "";
   };
 
-  const toggleFilterExpansion = (filterKey: string) => {
-    setExpandedFilters((prev) =>
-      prev.includes(filterKey)
-        ? prev.filter((key) => key !== filterKey)
-        : [...prev, filterKey]
-    );
-  };
-
   return (
-    <div className="min-h-screen bg-white text-neutral-800 font-sans antialiased p-4 sm:p-6 lg:p-10">
+    <div className="min-h-screen bg-neutral-50 text-neutral-800 font-sans antialiased p-4 sm:p-6 lg:p-10">
       <div className="mx-auto max-w-7xl">
-        <main className="grid gap-8 lg:grid-cols-[320px_1fr]">
+        <main className="grid gap-8 lg:grid-cols-[300px_1fr]">
           {/* Filters Sidebar */}
           <motion.aside
             initial={{ opacity: 0, x: isRtl ? 40 : -40 }}
@@ -291,7 +280,7 @@ const SpecialGiftsPage: React.FC = () => {
               <div className="flex items-center justify-between gap-2 px-5 py-4 bg-emerald-500/10">
                 <h3 className="flex items-center gap-2 text-base font-extrabold text-neutral-900">
                   <SlidersHorizontal size={18} className="text-emerald-500" />
-                  {isRtl ? "الفلاتر" : "Filters"}
+                  {isRtl ? "تخصيص الهدايا" : "Customize Gifts"}
                 </h3>
                 {hasActiveFilters && (
                   <button
@@ -398,31 +387,45 @@ const SpecialGiftsPage: React.FC = () => {
                   </div>
                 )}
 
-                {/* Price accordion */}
-                <div className="rounded-2xl border border-neutral-100">
-                  <button
-                    onClick={() => toggleFilterExpansion("price")}
-                    className="flex w-full items-center justify-between px-4 py-3"
-                    aria-expanded={expandedFilters.includes("price")}
-                  >
-                    <span className="flex items-center gap-2 text-sm font-extrabold text-neutral-900">
-                      <DollarSign size={16} className="text-emerald-500" />
-                      {isRtl ? "نطاق السعر" : "Price Range"}
-                    </span>
-                    {expandedFilters.includes("price") ? (
-                      <ChevronUp size={16} className="text-neutral-400" />
-                    ) : (
-                      <ChevronDown size={16} className="text-neutral-400" />
-                    )}
-                  </button>
-                  <AnimatePresence initial={false}>
-                    {expandedFilters.includes("price") && (
+                {/* Tabbed Filters */}
+                <div className="mt-4">
+                  <div className="mb-4 flex rounded-xl bg-neutral-100 p-1">
+                    <button
+                      className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                        activeFilterTab === "price"
+                          ? "bg-white text-neutral-900 shadow"
+                          : "text-neutral-600 hover:bg-neutral-200"
+                      }`}
+                      onClick={() => setActiveFilterTab("price")}
+                    >
+                      {isRtl ? "السعر" : "Price"}
+                    </button>
+                    <button
+                      className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                        activeFilterTab === "features"
+                          ? "bg-white text-neutral-900 shadow"
+                          : "text-neutral-600 hover:bg-neutral-200"
+                      }`}
+                      onClick={() => setActiveFilterTab("features")}
+                    >
+                      {isRtl ? "المميزات" : "Features"}
+                    </button>
+                  </div>
+
+                  <AnimatePresence mode="wait">
+                    {activeFilterTab === "price" && (
                       <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden px-4 pb-4"
+                        key="price-tab"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                        className="rounded-2xl border-2 border-dashed border-neutral-300 p-4"
                       >
+                        <h4 className="mb-3 flex items-center gap-2 text-sm font-extrabold text-neutral-900">
+                          <DollarSign size={16} className="text-emerald-500" />
+                          {isRtl ? "نطاق السعر" : "Price Range"}
+                        </h4>
                         <div className="grid gap-2">
                           {priceRanges.map((option) => {
                             const checked =
@@ -431,7 +434,7 @@ const SpecialGiftsPage: React.FC = () => {
                             return (
                               <label
                                 key={option.id}
-                                className={`flex items-center justify-between rounded-xl border px-3 py-2 text-sm transition-colors cursor-pointer ${
+                                className={`flex items-center justify-between rounded-full border px-3 py-2 text-sm transition-colors cursor-pointer ${
                                   checked
                                     ? "border-violet-500 bg-violet-500/5 text-violet-600"
                                     : "border-neutral-200 hover:bg-neutral-100"
@@ -461,34 +464,19 @@ const SpecialGiftsPage: React.FC = () => {
                         </div>
                       </motion.div>
                     )}
-                  </AnimatePresence>
-                </div>
-
-                {/* Features accordion */}
-                <div className="mt-4 rounded-2xl border border-neutral-100">
-                  <button
-                    onClick={() => toggleFilterExpansion("features")}
-                    className="flex w-full items-center justify-between px-4 py-3"
-                    aria-expanded={expandedFilters.includes("features")}
-                  >
-                    <span className="flex items-center gap-2 text-sm font-extrabold text-neutral-900">
-                      <Sparkles size={16} className="text-emerald-500" />
-                      {isRtl ? "المميزات" : "Features"}
-                    </span>
-                    {expandedFilters.includes("features") ? (
-                      <ChevronUp size={16} className="text-neutral-400" />
-                    ) : (
-                      <ChevronDown size={16} className="text-neutral-400" />
-                    )}
-                  </button>
-                  <AnimatePresence initial={false}>
-                    {expandedFilters.includes("features") && (
+                    {activeFilterTab === "features" && (
                       <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden px-4 pb-4"
+                        key="features-tab"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                        className="rounded-2xl border-2 border-dashed border-neutral-300 p-4"
                       >
+                        <h4 className="mb-3 flex items-center gap-2 text-sm font-extrabold text-neutral-900">
+                          <Sparkles size={16} className="text-emerald-500" />
+                          {isRtl ? "المميزات" : "Features"}
+                        </h4>
                         <div className="grid gap-2">
                           {filterOptions.features.map((feature) => {
                             const active = filters.features.includes(
@@ -497,7 +485,7 @@ const SpecialGiftsPage: React.FC = () => {
                             return (
                               <label
                                 key={feature.id}
-                                className={`flex items-center justify-between rounded-xl border px-3 py-2 text-sm transition-colors cursor-pointer ${
+                                className={`flex items-center justify-between rounded-full border px-3 py-2 text-sm transition-colors cursor-pointer ${
                                   active
                                     ? "border-violet-500 bg-violet-500/5 text-violet-600"
                                     : "border-neutral-200 hover:bg-neutral-100"
@@ -615,9 +603,9 @@ w-52 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl ${
                               }}
                               className={`w-full ${
                                 isRtl ? "text-right" : "text-left"
-                              } px-4 py-2 text-sm transition-colors hover:bg-neutral-100 ${
+                              } px-4 py-2 text-sm transition-colors hover:bg-emerald-500/10 ${
                                 filters.sortBy === option.value
-                                  ? "bg-neutral-100 text-neutral-900"
+                                  ? "bg-emerald-500/10 text-neutral-900"
                                   : "text-neutral-700"
                               }`}
                             >
@@ -680,27 +668,27 @@ w-52 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl ${
                   >
                     {filteredProducts.map((product, index) => (
                       <div
-                        key={product.id}
-                        className="group flex w-full flex-col overflow-hidden rounded-3xl border border-neutral-100 bg-white "
+                        key={`product-${product.id}`}
+                        className="group flex w-full flex-col overflow-hidden rounded-3xl"
                       >
                         <Link
                           to={`/product/${product.id}`}
                           className="block flex-1"
                         >
-                          <div className="relative aspect-square overflow-hidden">
+                          <div className="relative aspect-[4/4.4] sm:aspect-[4/4.7] overflow-hidden rounded-t-3xl rounded-b-3xl">
                             <ProductImage
                               src={product.imageUrl}
                               alt={isRtl ? product.nameAr : product.nameEn}
-                              className="h-full w-full object-cover"
-                              width={240}
-                              height={240}
-                              aspectRatio="square"
-                              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                              className="h-full w-full object-cover rounded-t-3xl rounded-b-3xl"
+                              width={400}
+                              height={500}
+                              aspectRatio="portrait"
+                              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                               quality={100}
-                              priority={index < 8}
+                              priority={index < 4}
                               showZoom={false}
                               placeholderSize={80}
-                              enableBlurUp={false}
+                              enableBlurUp={true}
                             />
                             <div className="absolute start-2 top-2 flex flex-col gap-1">
                               {product.isBestSeller && (
@@ -718,37 +706,37 @@ w-52 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl ${
                             </div>
                           </div>
                         </Link>
-                        <div className="relative border-t border-neutral-100 bg-white p-3">
-                          <Link to={`/product/${product.id}`}>
-                            <h3 className="mt-1 mb-1 line-clamp-1 text-sm font-bold text-neutral-900 drop-shadow-sm">
+                        <div className="relative p-3">
+                          {/* Product Name */}
+                          <Link
+                            to={`/product/${product.id}`}
+                            className="block mb-2"
+                          >
+                            <h3 className="line-clamp-2 text-sm font-bold text-neutral-900 hover:text-emerald-600 transition-colors duration-200 leading-tight">
                               {isRtl ? product.nameAr : product.nameEn}
                             </h3>
                           </Link>
+
+                          {/* Price and Actions */}
                           <div className="flex items-center justify-between">
-                            <p className="flex items-center gap-1 text-base font-extrabold text-neutral-900">
-                              {isRtl ? (
-                                <>
-                                  {product.price}
-                                  <RiyalSymbol className="h-3.5 w-3.5 text-neutral-900" />
-                                </>
-                              ) : (
-                                <>
-                                  <RiyalSymbol className="h-3.5 w-3.5 text-neutral-900" />
-                                  {product.price}
-                                </>
-                              )}
-                            </p>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1">
+                              <RiyalSymbol className="h-3.5 w-3.5 text-emerald-600" />
+                              <span className="text-base font-extrabold text-emerald-700">
+                                {product.price}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-1.5">
                               <FavoriteButton
                                 product={product}
-                                className="flex h-9 w-9 items-center justify-center rounded-full border border-neutral-200 bg-white text-rose-500 shadow-md transition-colors hover:bg-neutral-50"
-                                size={16}
+                                className="flex h-7 w-7 items-center justify-center rounded-full border border-neutral-200 bg-white text-rose-500 shadow-sm transition-all duration-200 hover:bg-rose-50 hover:border-rose-200"
+                                size={14}
                               />
                               <AddToCartButton
                                 product={product}
                                 variant="primary"
                                 size="sm"
-                                className="rounded-full bg-violet-500 px-3 py-1.5 text-xs font-semibold text-white shadow-md hover:opacity-95"
+                                className="rounded-full bg-violet-500 px-2.5 py-1 text-xs font-semibold text-white shadow-sm transition-all duration-200 hover:bg-violet-600"
                                 showLabel={!isMobile}
                               />
                             </div>
@@ -767,8 +755,8 @@ w-52 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl ${
                   >
                     {filteredProducts.map((product, index) => (
                       <div
-                        key={product.id}
-                        className="flex flex-col items-start gap-4 rounded-3xl border border-neutral-100 bg-white p-4 shadow-[0_6px_24px_-8px_rgba(0,0,0,0.08)] transition-colors hover:shadow-[0_8px_32px_-8px_rgba(0,0,0,0.1)] sm:flex-row"
+                        key={`list-product-${product.id}`}
+                        className="flex flex-col items-start gap-4 rounded-3xl p-4 sm:flex-row"
                       >
                         <Link
                           to={`/product/${product.id}`}
@@ -778,71 +766,74 @@ w-52 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl ${
                             src={product.imageUrl}
                             alt={isRtl ? product.nameAr : product.nameEn}
                             className="h-full w-full rounded-2xl object-cover"
-                            width={112}
-                            height={112}
+                            width={200}
+                            height={200}
                             aspectRatio="square"
-                            sizes="112px"
+                            sizes="200px"
                             quality={100}
-                            priority={index < 4}
+                            priority={index < 2}
                             showZoom={false}
                             placeholderSize={80}
-                            enableBlurUp={false}
+                            enableBlurUp={true}
                           />
                         </Link>
                         <div className="flex w-full flex-1 flex-col justify-between">
                           <div>
-                            <div className="mb-1 flex items-center justify-between">
+                            {/* Product Title */}
+                            <div className="mb-2">
                               <Link to={`/product/${product.id}`}>
-                                <h3 className="text-base font-bold text-neutral-900 hover:text-emerald-500">
+                                <h3 className="text-lg font-bold text-neutral-900 hover:text-emerald-600 transition-colors duration-200 leading-tight">
                                   {isRtl ? product.nameAr : product.nameEn}
                                 </h3>
                               </Link>
                             </div>
-                            <div className="mb-2 flex flex-wrap gap-1.5">
+
+                            {/* Badges */}
+                            <div className="mb-3 flex flex-wrap gap-2">
                               {product.isBestSeller && (
-                                <span className="inline-flex items-center justify-center gap-1 rounded-full bg-violet-500 px-2 py-0.5 text-xs font-semibold text-white">
-                                  <Flame size={12} className="text-white" />
+                                <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
+                                  <Flame size={12} />
                                   {isRtl ? "الأكثر مبيعاً" : "Best Seller"}
                                 </span>
                               )}
                               {product.isSpecialGift && (
-                                <span className="inline-flex items-center justify-center gap-1 rounded-full bg-emerald-500 px-2 py-0.5 text-xs font-semibold text-white">
-                                  <Sparkles size={12} className="text-white" />
+                                <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
+                                  <Sparkles size={12} />
                                   {isRtl ? "مميز" : "Special"}
                                 </span>
                               )}
                             </div>
-                            <p className="line-clamp-2 text-sm text-neutral-600">
+
+                            {/* Description */}
+                            <p className="line-clamp-2 text-sm text-neutral-600 leading-relaxed mb-3">
                               {isRtl
                                 ? product.descriptionAr
                                 : product.descriptionEn}
                             </p>
                           </div>
-                          <div className="mt-3 flex items-center justify-between">
-                            <p className="flex items-center gap-1 text-lg font-extrabold text-neutral-900">
-                              {isRtl ? (
-                                <>
-                                  {product.price}
-                                  <RiyalSymbol className="h-4 w-4 text-neutral-900" />
-                                </>
-                              ) : (
-                                <>
-                                  <RiyalSymbol className="h-4 w-4 text-neutral-900" />
-                                  {product.price}
-                                </>
-                              )}
-                            </p>
-                            <div className="flex items-center gap-2">
+
+                          {/* Bottom Section */}
+                          <div className="flex items-center justify-between pt-2">
+                            {/* Price */}
+                            <div className="flex items-center gap-1">
+                              <RiyalSymbol className="h-4 w-4 text-emerald-600" />
+                              <span className="text-lg font-extrabold text-emerald-700">
+                                {product.price}
+                              </span>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex items-center gap-1.5">
                               <FavoriteButton
                                 product={product}
-                                className="rounded-full bg-neutral-100 p-2 text-rose-500 hover:bg-neutral-200"
+                                className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-200 bg-white text-rose-500 shadow-sm transition-all duration-200 hover:bg-rose-50 hover:border-rose-200"
                                 size={16}
                               />
                               <AddToCartButton
                                 product={product}
                                 variant="primary"
                                 size="sm"
-                                className="rounded-full bg-violet-500 px-3 py-1.5 text-xs font-semibold text-white shadow-md hover:opacity-95"
+                                className="rounded-full bg-violet-500 px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-violet-600"
                                 showLabel={true}
                               />
                             </div>
@@ -860,7 +851,7 @@ w-52 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl ${
                   className="rounded-3xl border border-neutral-100/60 bg-white/80 p-10 text-center shadow-[0_6px_24px_-8px_rgba(0,0,0,0.08)]"
                 >
                   <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-neutral-100">
-                    <Search size={40} className="text-neutral-400" />
+                    <Gift size={40} className="text-neutral-400" />
                   </div>
                   <h3 className="mb-2 text-2xl font-extrabold text-neutral-900">
                     {isRtl ? "لا توجد هدايا" : "No Gifts Found"}
@@ -926,11 +917,11 @@ w-52 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl ${
                     {priceRanges.map((option) => (
                       <label
                         key={option.id}
-                        className={`flex items-center rounded-xl border px-4 py-3 text-base transition-colors cursor-pointer ${
+                        className={`flex items-center rounded-xl border border-neutral-200 px-4 py-3 text-base transition-colors cursor-pointer ${
                           filters.priceRange[0] === option.range[0] &&
                           filters.priceRange[1] === option.range[1]
                             ? "border-violet-500 bg-violet-500/5 text-violet-600"
-                            : "border-neutral-200 hover:bg-neutral-100"
+                            : "hover:bg-neutral-100"
                         }`}
                       >
                         <input
@@ -965,10 +956,10 @@ w-52 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl ${
                     {filterOptions.features.map((feature) => (
                       <label
                         key={feature.id}
-                        className={`flex items-center rounded-xl border px-4 py-3 text-base transition-colors cursor-pointer ${
+                        className={`flex items-center rounded-xl border border-neutral-200 px-4 py-3 text-base transition-colors cursor-pointer ${
                           filters.features.includes(feature.id)
                             ? "border-violet-500 bg-violet-500/5 text-violet-600"
-                            : "border-neutral-200 hover:bg-neutral-100"
+                            : "hover:bg-neutral-100"
                         }`}
                       >
                         <input
@@ -986,6 +977,25 @@ w-52 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl ${
                     ))}
                   </div>
                 </div>
+              </div>
+              <div className="mt-8 flex justify-end">
+                <button
+                  onClick={() => {
+                    clearFilters();
+                    setShowMobileFilters(false);
+                  }}
+                  className="flex items-center gap-2 rounded-full bg-neutral-200 px-6 py-3 text-sm font-bold text-neutral-800 hover:bg-neutral-300"
+                >
+                  <X size={14} />
+                  {isRtl ? "مسح الفلاتر" : "Clear Filters"}
+                </button>
+                <button
+                  onClick={() => setShowMobileFilters(false)}
+                  className={`ms-3 flex items-center gap-2 rounded-full bg-violet-500 px-6 py-3 text-sm font-bold text-white hover:opacity-95`}
+                >
+                  <Filter size={14} />
+                  {isRtl ? "تطبيق الفلاتر" : "Apply Filters"}
+                </button>
               </div>
             </motion.div>
           </motion.div>

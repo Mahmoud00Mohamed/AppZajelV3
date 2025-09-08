@@ -1,21 +1,19 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-// لم نعد بحاجة لـ Gift
-// import { Gift } from "lucide-react";
-
 import PigeonIcon from "/photo/Logo.svg"; // ← استيراد SVG كصورة
 
 interface LogoProps {
   small?: boolean;
+  className?: string; // السماح بإضافة className
 }
 
-const Logo: React.FC<LogoProps> = ({ small = false }) => {
+const Logo: React.FC<LogoProps> = ({ small = false, className }) => {
   const { i18n } = useTranslation();
   const isArabic = i18n.language === "ar";
 
   return (
-    <div className="flex items-center">
-      <div className="text-primary">
+    <div className={`flex items-center ${className || ""}`}>
+      <div className="text-emerald-500">
         <img
           src={PigeonIcon}
           alt="Pigeon Icon"
@@ -25,12 +23,14 @@ const Logo: React.FC<LogoProps> = ({ small = false }) => {
       </div>
       <div className={`${small ? "ml-1.5" : "ml-2"} rtl:mr-2 rtl:ml-0`}>
         <h1
-          className={`font-bold ${small ? "text-lg" : "text-xl"} text-primary`}
+          className={`font-bold ${
+            small ? "text-lg" : "text-xl"
+          } text-violet-500`}
         >
           {isArabic ? "زاجل السعادة" : "Zajil Al-Sa'adah"}
         </h1>
         {!small && (
-          <p className="text-xs text-gray-500 -mt-1">
+          <p className="text-xs text-neutral-400 -mt-1">
             {isArabic ? "هدايا مميزة" : "Premium Gifts"}
           </p>
         )}

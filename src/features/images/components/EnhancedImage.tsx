@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, memo } from "react";
 import LogoPlaceholder from "./LogoPlaceholder";
 import { imageCache } from "../utils/ImageCache";
 
@@ -62,11 +62,17 @@ const EnhancedImage: React.FC<EnhancedImageProps> = ({
       if (originalSrc.includes("pexels.com")) {
         const url = new URL(originalSrc);
         if (targetWidth) url.searchParams.set("w", targetWidth.toString());
-        if (targetQuality && targetQuality < 90) {
+        // Only compress for very low quality images (blur-up effect)
+        if (targetQuality && targetQuality <= 20) {
           url.searchParams.set("auto", "compress");
           url.searchParams.set("cs", "tinysrgb");
         }
-        url.searchParams.set("dpr", "2");
+        // For high quality images, use high DPR for crisp display
+        if (targetQuality && targetQuality >= 90) {
+          url.searchParams.set("dpr", "2");
+        } else {
+          url.searchParams.set("dpr", "1.5");
+        }
         return url.toString();
       }
       return originalSrc;
@@ -126,8 +132,8 @@ const EnhancedImage: React.FC<EnhancedImageProps> = ({
 
     const loadImage = async () => {
       try {
-        // Load low quality version first for blur-up effect
-        if (enableBlurUp) {
+        // Load low quality version first for blur-up effect (only for non-priority images)
+        if (enableBlurUp && !priority) {
           const lowQualitySrc = generateOptimizedUrl(
             src,
             20,
@@ -143,7 +149,7 @@ const EnhancedImage: React.FC<EnhancedImageProps> = ({
           lowQualityImg.src = lowQualitySrc;
         }
 
-        // Load high quality version
+        // Load high quality version with optimization but no compression
         const highQualitySrc = generateOptimizedUrl(src, quality, width);
         const cachedSrc = await imageCache.getImage(highQualitySrc);
 
@@ -189,6 +195,7 @@ const EnhancedImage: React.FC<EnhancedImageProps> = ({
     quality,
     width,
     enableBlurUp,
+    priority,
     fallbackSrc,
     onLoad,
     onError,
@@ -199,8 +206,8 @@ const EnhancedImage: React.FC<EnhancedImageProps> = ({
       ref={imgRef}
       className={`relative overflow-hidden ${aspectRatioClasses[aspectRatio]} ${className}`}
     >
-      {/* Low Quality Image (Blur-up) - shows immediately */}
-      {lowQualityLoaded && enableBlurUp && (
+      {/* Low Quality Image (Blur-up) - shows immediately for non-priority images */}
+      {lowQualityLoaded && enableBlurUp && !priority && (
         <img
           src={imageSrc}
           alt=""
@@ -241,4 +248,4 @@ const EnhancedImage: React.FC<EnhancedImageProps> = ({
   );
 };
 
-export default EnhancedImage;
+export default memo(EnhancedImage);

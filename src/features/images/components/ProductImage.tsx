@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import EnhancedImage from "./EnhancedImage";
 import { ZoomIn } from "lucide-react";
@@ -147,4 +147,4 @@ const ProductImage: React.FC<ProductImageProps> = ({
   );
 };
 
-export default ProductImage;
+export default memo(ProductImage);
