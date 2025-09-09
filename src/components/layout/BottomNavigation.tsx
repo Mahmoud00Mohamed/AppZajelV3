@@ -56,12 +56,9 @@ const BottomNavigation: React.FC = () => {
   };
 
   return (
-    <nav
-      className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-neutral-200/50 md:hidden"
-      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-    >
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-neutral-200/50 md:hidden">
       <div
-        className={`flex h-16 justify-around ${
+        className={`flex h-[60px] justify-around ${
           isRtl ? "flex-row-reverse" : "flex-row"
         }`}
       >
