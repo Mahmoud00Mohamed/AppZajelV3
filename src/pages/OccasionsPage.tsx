@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import {
@@ -9,20 +9,33 @@ import {
   SlidersHorizontal,
   X,
   ChevronDown,
-  ChevronUp,
   Flame,
+  Crown,
   Sparkles,
   Tag,
   DollarSign,
-  CheckCircle,
-  Eye,
+  Gift,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Variants, Easing } from "framer-motion";
 import occasions from "../data/occasions.json";
 import { allProducts } from "../data";
-import { ProductImage } from "../features/images";
+import { ProductImage, usePreloadCriticalImages } from "../features/images";
 import FavoriteButton from "../components/ui/FavoriteButton";
 import AddToCartButton from "../components/ui/AddToCartButton";
+
+interface Product {
+  id: number;
+  nameEn: string;
+  nameAr: string;
+  price: number;
+  imageUrl: string;
+  isSpecialGift: boolean;
+  isBestSeller?: boolean;
+  categoryId?: string;
+  occasionId?: string;
+  descriptionEn?: string;
+  descriptionAr?: string;
+}
 
 interface FilterState {
   occasions: string[];
@@ -31,30 +44,33 @@ interface FilterState {
   sortBy: string;
 }
 
+const RiyalSymbol = ({ className = "w-4 h-4" }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 1124.14 1256.39"
+    className={className}
+    fill="currentColor"
+    aria-hidden="true"
+  >
+    <path d="M699.62,1113.02h0c-20.06,44.48-33.32,92.75-38.4,143.37l424.51-90.24c20.06-44.47,33.31-92.75,38.4-143.37l-424.51,90.24Z" />
+    <path d="M1085.73,895.8c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.33v-135.2l292.27-62.11c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.27V66.13c-50.67,28.45-95.67,66.32-132.25,110.99v403.35l-132.25,28.11V0c-50.67,28.44-95.67,66.32-132.25,110.99v525.69l-295.91,62.88c-20.06,44.47-33.33,92.75-38.42,143.37l334.33-71.05v170.26l-358.3,76.14c-20.06,44.47-33.32,92.75-38.4,143.37l375.04-79.7c30.53-6.35,56.77-24.4,73.83-49.24l68.78-101.97v-.02c7.14-10.55,11.3-23.27,11.3-36.97v-149.98l132.25-28.11v270.4l424.53-90.28Z" />
+  </svg>
+);
+
 const OccasionsPage: React.FC = () => {
   const { t, i18n } = useTranslation();
   const isRtl = i18n.language === "ar";
   const { slug } = useParams<{ slug: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
+  const sortDropdownRef = useRef<HTMLDivElement>(null);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [isLoading] = useState(false);
-  const [expandedFilters, setExpandedFilters] = useState<string[]>([
-    "occasions",
-    "price",
-  ]);
-  const [quickFilters, setQuickFilters] = useState<string[]>([]);
   const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 1024);
-    };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  const [showSortOptions, setShowSortOptions] = useState(false);
+  const [activeFilterTab, setActiveFilterTab] = useState("price");
 
   const [filters, setFilters] = useState<FilterState>({
     occasions: slug ? [slug] : [],
@@ -62,6 +78,33 @@ const OccasionsPage: React.FC = () => {
     features: [],
     sortBy: "featured",
   });
+
+  const allProductsData: Product[] = useMemo(() => allProducts, []);
+  const imageUrls = useMemo(
+    () => allProductsData.map((p) => p.imageUrl),
+    [allProductsData]
+  );
+  usePreloadCriticalImages(imageUrls);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 1024);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    const onDocClick = (e: MouseEvent) => {
+      if (
+        sortDropdownRef.current &&
+        !sortDropdownRef.current.contains(e.target as Node)
+      ) {
+        setShowSortOptions(false);
+      }
+    };
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, []);
 
   useEffect(() => {
     const search = searchParams.get("search");
@@ -80,67 +123,82 @@ const OccasionsPage: React.FC = () => {
     setSearchParams(params);
   }, [searchTerm, filters.occasions, setSearchParams]);
 
-  const quickFilterOptions = [
-    {
-      id: "bestseller",
-      label: isRtl ? "الأكثر مبيعاً" : "Best Sellers",
-      icon: <Flame size={12} />,
-      color: "bg-amber-50 text-amber-700 border-amber-100",
-    },
-    {
-      id: "special",
-      label: isRtl ? "هدايا مميزة" : "Special Gifts",
-      icon: <Sparkles size={12} />,
-      color: "bg-purple-50 text-purple-700 border-purple-100",
-    },
-    {
-      id: "premium",
-      label: isRtl ? "فاخر" : "Premium",
-      icon: <Tag size={12} />,
-      color: "bg-purple-50 text-purple-700 border-purple-100",
-    },
-    {
-      id: "affordable",
-      label: isRtl ? "بأسعار معقولة" : "Affordable",
-      icon: <Tag size={12} />,
-      color: "bg-green-50 text-green-700 border-green-100",
-    },
-  ];
-
   const priceRanges = useMemo(
     () => [
       {
         id: "under-350",
-        label: isRtl ? "أقل من 350 ر.س" : "Under 350 SAR",
-        range: [0, 349],
-        count: allProducts.filter((p) => p.price < 350).length,
+        label: isRtl ? "أقل من 350" : "Under 350",
+        range: [0, 349] as [number, number],
       },
       {
         id: "350-700",
-        label: isRtl ? "350 ر.س إلى 700 ر.س" : "350 SAR to 700 SAR",
-        range: [350, 700],
-        count: allProducts.filter((p) => p.price >= 350 && p.price <= 700)
-          .length,
+        label: isRtl ? "350 إلى 700" : "350 to 700",
+        range: [350, 700] as [number, number],
       },
       {
         id: "700-1000",
-        label: isRtl ? "700 ر.س إلى 1000 ر.س" : "700 SAR to 1000 SAR",
-        range: [701, 1000],
-        count: allProducts.filter((p) => p.price > 700 && p.price <= 1000)
-          .length,
+        label: isRtl ? "700 إلى 1000" : "700 to 1000",
+        range: [701, 1000] as [number, number],
       },
       {
         id: "over-1000",
-        label: isRtl ? "أكثر من 1000 ر.س" : "Over 1000 SAR",
-        range: [1001, Infinity],
-        count: allProducts.filter((p) => p.price > 1000).length,
+        label: isRtl ? "أكثر من 1000" : "Over 1000",
+        range: [1001, Infinity] as [number, number],
       },
     ],
     [isRtl]
   );
 
+  const filterOptions = {
+    occasions: occasions,
+    features: [
+      {
+        id: "bestseller",
+        nameKey: isRtl ? "الأكثر مبيعاً" : "Best Seller",
+        icon: <Flame size={14} />,
+      },
+      {
+        id: "special",
+        nameKey: isRtl ? "هدية مميزة" : "Special Gift",
+        icon: <Sparkles size={14} />,
+      },
+      {
+        id: "premium",
+        nameKey: isRtl ? "فاخر" : "Premium",
+        icon: <Crown size={14} />,
+      },
+      {
+        id: "affordable",
+        nameKey: isRtl ? "بأسعار معقولة" : "Affordable",
+        icon: <Tag size={14} />,
+      },
+    ],
+    sortOptions: [
+      {
+        value: "featured",
+        label: isRtl ? "مميز" : "Featured",
+        icon: <Sparkles size={14} />,
+      },
+      {
+        value: "price-low",
+        label: isRtl ? "السعر: منخفض إلى مرتفع" : "Price: Low to High",
+        icon: <DollarSign size={14} />,
+      },
+      {
+        value: "price-high",
+        label: isRtl ? "السعر: مرتفع إلى منخفض" : "Price: High to Low",
+        icon: <DollarSign size={14} />,
+      },
+      {
+        value: "name",
+        label: isRtl ? "الاسم" : "Name",
+        icon: <Tag size={14} />,
+      },
+    ],
+  };
+
   const filteredProducts = useMemo(() => {
-    let products = allProducts;
+    let products = allProductsData;
 
     if (searchTerm) {
       products = products.filter((product) =>
@@ -150,7 +208,6 @@ const OccasionsPage: React.FC = () => {
       );
     }
 
-    // Apply occasion filter - either from slug or from filters
     const occasionsToFilter = slug
       ? [slug, ...filters.occasions.filter((o) => o !== slug)]
       : filters.occasions;
@@ -169,10 +226,9 @@ const OccasionsPage: React.FC = () => {
       );
     }
 
-    const allFeatures = [...filters.features, ...quickFilters];
-    if (allFeatures.length > 0) {
+    if (filters.features.length > 0) {
       products = products.filter((product) =>
-        allFeatures.every((feature) => {
+        filters.features.every((feature) => {
           switch (feature) {
             case "bestseller":
               return product.isBestSeller;
@@ -203,59 +259,7 @@ const OccasionsPage: React.FC = () => {
           return (b.isBestSeller ? 1 : 0) - (a.isBestSeller ? 1 : 0);
       }
     });
-  }, [searchTerm, filters, quickFilters, isRtl, slug]);
-
-  const filterOptions = {
-    occasions: occasions,
-    features: [
-      {
-        id: "bestseller",
-        nameKey: isRtl ? "الأكثر مبيعاً" : "Best Seller",
-        icon: <Sparkles size={14} />,
-        count: allProducts.filter((p) => p.isBestSeller).length,
-      },
-      {
-        id: "special",
-        nameKey: isRtl ? "هدية مميزة" : "Special Gift",
-        icon: <Sparkles size={14} />,
-        count: allProducts.filter((p) => p.isSpecialGift).length,
-      },
-      {
-        id: "premium",
-        nameKey: isRtl ? "فاخر" : "Premium",
-        icon: <Tag size={14} />,
-        count: allProducts.filter((p) => p.price > 300).length,
-      },
-      {
-        id: "affordable",
-        nameKey: isRtl ? "بأسعار معقولة" : "Affordable",
-        icon: <Tag size={14} />,
-        count: allProducts.filter((p) => p.price <= 200).length,
-      },
-    ],
-    sortOptions: [
-      {
-        value: "featured",
-        label: isRtl ? "مميز" : "Featured",
-        icon: <Sparkles size={14} />,
-      },
-      {
-        value: "price-low",
-        label: isRtl ? "السعر: منخفض إلى مرتفع" : "Price: Low to High",
-        icon: <DollarSign size={14} />,
-      },
-      {
-        value: "price-high",
-        label: isRtl ? "السعر: مرتفع إلى منخفض" : "Price: High to Low",
-        icon: <DollarSign size={14} />,
-      },
-      {
-        value: "name",
-        label: isRtl ? "الاسم" : "Name",
-        icon: <Tag size={14} />,
-      },
-    ],
-  };
+  }, [searchTerm, filters, isRtl, slug, allProductsData]);
 
   const updateFilter = (
     key: keyof FilterState,
@@ -277,22 +281,6 @@ const OccasionsPage: React.FC = () => {
     setFilters((prev) => ({ ...prev, priceRange: [min, max] }));
   };
 
-  const toggleQuickFilter = (filterId: string) => {
-    setQuickFilters((prev) =>
-      prev.includes(filterId)
-        ? prev.filter((id) => id !== filterId)
-        : [...prev, filterId]
-    );
-  };
-
-  const toggleFilterExpansion = (filterKey: string) => {
-    setExpandedFilters((prev) =>
-      prev.includes(filterKey)
-        ? prev.filter((key) => key !== filterKey)
-        : [...prev, filterKey]
-    );
-  };
-
   const clearFilters = () => {
     setFilters({
       occasions: slug ? [slug] : [],
@@ -300,51 +288,69 @@ const OccasionsPage: React.FC = () => {
       features: [],
       sortBy: "featured",
     });
-    setQuickFilters([]);
     setSearchTerm("");
   };
 
   const hasActiveFilters =
-    filters.occasions.length > (slug ? 1 : 0) ||
     filters.features.length > 0 ||
+    filters.occasions.length > (slug ? 1 : 0) ||
     filters.priceRange[0] !== 0 ||
     filters.priceRange[1] !== Infinity ||
-    searchTerm.length > 0 ||
-    quickFilters.length > 0;
+    searchTerm.length > 0;
 
   const activeFiltersCount =
-    (filters.occasions.length > (slug ? 1 : 0) ? filters.occasions.length : 0) +
     filters.features.length +
-    quickFilters.length +
+    (filters.occasions.length > (slug ? 1 : 0) ? filters.occasions.length : 0) +
     (filters.priceRange[0] !== 0 || filters.priceRange[1] !== Infinity
       ? 1
       : 0) +
     (searchTerm.length > 0 ? 1 : 0);
 
+  const getSortLabel = (sortByValue: string): string => {
+    const sortOption = filterOptions.sortOptions.find(
+      (option) => option.value === sortByValue
+    );
+    return sortOption ? sortOption.label : "";
+  };
+
+  const productCardVariants: Variants = {
+    hidden: { opacity: 0, scale: 0.95, transition: { duration: 0.2 } },
+    visible: (i: number) => ({
+      opacity: 1,
+      scale: 1,
+      transition: {
+        delay: i * 0.05,
+        duration: 0.3,
+        ease: "easeOut" as Easing,
+      },
+    }),
+    exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2 } },
+  };
+
   if (slug && !occasions.some((occasion) => occasion.id === slug)) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-rose-50 to-purple-50">
+      <div className="min-h-screen flex items-center justify-center bg-neutral-50 p-4 sm:p-6 lg:p-10">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="text-center p-8 bg-white rounded-2xl shadow-lg max-w-md mx-4 border border-neutral-100"
+          className="text-center p-8 bg-white rounded-3xl shadow-lg max-w-md mx-4 border border-neutral-100/60"
         >
-          <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Tag size={32} className="text-purple-600" />
+          <div className="w-24 h-24 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Gift size={40} className="text-neutral-400" />
           </div>
-          <h1 className="text-xl font-bold text-neutral-800 mb-4">
+          <h1 className="text-2xl font-extrabold text-neutral-900 mb-4">
             {isRtl ? "المناسبة غير موجودة" : "Occasion Not Found"}
           </h1>
-          <p className="text-neutral-600 mb-6 text-sm">
+          <p className="text-neutral-600 mb-8 text-sm max-w-sm mx-auto">
             {isRtl
-              ? "عذراً، المناسبة المطلوبة غير متوفرة."
-              : "Sorry, the requested occasion is not available."}
+              ? "عذراً، المناسبة المطلوبة غير متوفرة. جرب العودة إلى صفحة المنتجات."
+              : "Sorry, the requested occasion is not available. Try returning to the products page."}
           </p>
           <Link
-            to="/"
-            className="px-5 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-bold shadow-md"
+            to="/occasions/all"
+            className="px-6 py-3 bg-violet-500 text-white rounded-full hover:bg-violet-600 transition-colors text-sm font-bold shadow-md"
           >
-            {t("product.backToHome")}
+            {isRtl ? "العودة إلى الكل" : "Back to All"}
           </Link>
         </motion.div>
       </div>
@@ -352,380 +358,476 @@ const OccasionsPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-rose-50 to-purple-50 px-4 sm:px-6 lg:px-8 font-serif text-neutral-800">
-      <div className="max-w-7xl mx-auto py-8 flex flex-col lg:flex-row gap-8">
-        {/* Desktop Filters Sidebar */}
-        <div className="hidden lg:block w-72 flex-shrink-0">
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-neutral-100">
-            <div className="mb-6">
-              <label className="flex items-center gap-2 text-sm font-bold text-purple-800 mb-3">
-                <Search size={16} />
-                {isRtl ? "البحث" : "Search"}
-              </label>
-              <div className="relative">
-                <Search
-                  size={16}
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400"
-                />
-                <input
-                  type="text"
-                  placeholder={
-                    isRtl ? "ابحث عن المنتجات..." : "Search products..."
-                  }
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-purple-400 text-sm transition-all duration-300 bg-neutral-50 placeholder-neutral-400"
-                />
-                {searchTerm && (
+    <div className="min-h-screen bg-neutral-50 text-neutral-800 font-sans antialiased p-4 sm:p-6 lg:p-10">
+      <div className="mx-auto max-w-7xl">
+        <main className="grid gap-8 lg:grid-cols-[300px_1fr] w-full min-w-[0]">
+          {/* Filters Sidebar */}
+          <motion.aside
+            initial={{ opacity: 0, x: isRtl ? 40 : -40 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="hidden lg:block w-[300px] flex-shrink-0"
+          >
+            <div className="sticky top-6 rounded-3xl border border-neutral-100 bg-white shadow-[0_8px_30px_-12px_rgba(0,0,0,0.08)] overflow-hidden">
+              <div className="flex items-center justify-between gap-2 px-5 py-4 bg-emerald-500/10">
+                <h3 className="flex items-center gap-2 text-base font-extrabold text-neutral-900">
+                  <SlidersHorizontal size={18} className="text-emerald-500" />
+                  {isRtl ? "تخصيص" : "Customize"}
+                </h3>
+                {hasActiveFilters && (
                   <button
-                    onClick={() => setSearchTerm("")}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                    onClick={clearFilters}
+                    className="rounded-full bg-violet-500 px-3 py-1 text-xs font-semibold text-white hover:opacity-95"
                   >
-                    <X size={16} />
+                    {isRtl ? "مسح" : "Clear"}
                   </button>
                 )}
               </div>
-            </div>
 
-            <div className="flex items-center justify-between mb-6 border-b border-neutral-200 pb-3">
-              <h3 className="flex items-center gap-2 text-sm font-bold text-purple-800">
-                <SlidersHorizontal size={16} />
-                {isRtl ? "فلاتر التصفية" : "Filters"}
-              </h3>
-              {hasActiveFilters && (
-                <button
-                  onClick={clearFilters}
-                  className="flex items-center gap-1 text-xs text-rose-600 hover:text-rose-700 transition-colors font-medium"
-                >
-                  <X size={12} />
-                  {isRtl ? "مسح الكل" : "Clear"}
-                </button>
-              )}
-            </div>
-
-            {hasActiveFilters && (
-              <div className="mb-6 p-3 bg-purple-50 rounded-lg text-xs text-purple-700 font-bold border border-purple-100">
-                {activeFiltersCount} {isRtl ? "فلتر نشط" : "active filters"} •{" "}
-                {filteredProducts.length} {isRtl ? "نتيجة" : "results"}
-              </div>
-            )}
-
-            <div className="space-y-4">
-              <div className="bg-neutral-50 rounded-lg p-4 border border-neutral-100">
-                <button
-                  onClick={() => toggleFilterExpansion("occasions")}
-                  className="w-full flex items-center justify-between text-sm font-bold text-neutral-800"
-                >
-                  <span className="flex items-center gap-2">
-                    <Tag size={16} className="text-purple-600" />
-                    {isRtl ? "المناسبات" : "Occasions"}
-                  </span>
-                  {expandedFilters.includes("occasions") ? (
-                    <ChevronUp size={16} className="text-neutral-500" />
-                  ) : (
-                    <ChevronDown size={16} className="text-neutral-500" />
-                  )}
-                </button>
-                <AnimatePresence>
-                  {expandedFilters.includes("occasions") && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="mt-3 space-y-3 overflow-hidden"
-                    >
-                      {filterOptions.occasions.map((occasion) => {
-                        const occasionCount = allProducts.filter(
-                          (p) => p.occasionId === occasion.id
-                        ).length;
-                        return (
-                          <label
-                            key={occasion.id}
-                            className="flex items-center gap-3 text-sm text-neutral-700 cursor-pointer hover:text-purple-600 transition-colors"
-                          >
-                            <input
-                              type="checkbox"
-                              checked={filters.occasions.includes(occasion.id)}
-                              onChange={() =>
-                                toggleArrayFilter("occasions", occasion.id)
-                              }
-                              className="rounded border-neutral-300 text-purple-500 focus:ring-purple-500 w-4 h-4"
-                            />
-                            <span className="font-medium">
-                              {t(occasion.nameKey)}
-                            </span>
-                            <span className="text-xs text-neutral-400 font-normal">
-                              ({occasionCount})
-                            </span>
-                          </label>
-                        );
-                      })}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              <div className="bg-neutral-50 rounded-lg p-4 border border-neutral-100">
-                <button
-                  onClick={() => toggleFilterExpansion("price")}
-                  className="w-full flex items-center justify-between text-sm font-bold text-neutral-800"
-                >
-                  <span className="flex items-center gap-2">
-                    <DollarSign size={16} className="text-purple-600" />
-                    {isRtl ? "نطاق السعر" : "Price Range"}
-                  </span>
-                  {expandedFilters.includes("price") ? (
-                    <ChevronUp size={16} className="text-neutral-500" />
-                  ) : (
-                    <ChevronDown size={16} className="text-neutral-500" />
-                  )}
-                </button>
-                <AnimatePresence>
-                  {expandedFilters.includes("price") && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="mt-3 space-y-3 overflow-hidden"
-                    >
-                      {priceRanges.map((rangeOption) => (
-                        <label
-                          key={rangeOption.id}
-                          className="flex items-center gap-3 text-sm text-neutral-700 cursor-pointer hover:text-purple-600 transition-colors"
-                        >
-                          <input
-                            type="radio"
-                            name="priceRange"
-                            checked={
-                              filters.priceRange[0] === rangeOption.range[0] &&
-                              filters.priceRange[1] === rangeOption.range[1]
-                            }
-                            onChange={() =>
-                              handlePriceRangeSelect(
-                                rangeOption.range[0],
-                                rangeOption.range[1]
-                              )
-                            }
-                            className="rounded-full border-neutral-300 text-purple-500 focus:ring-purple-500 w-4 h-4"
-                          />
-                          <span className="font-medium">
-                            {rangeOption.label}
-                          </span>
-                          <span className="text-xs text-neutral-400 font-normal">
-                            ({rangeOption.count})
-                          </span>
-                        </label>
-                      ))}
-                      <div className="text-xs text-neutral-600 font-medium pt-2 border-t border-neutral-100">
-                        {isRtl ? "النطاق المحدد: " : "Selected Range: "}
-                        {filters.priceRange[0]} {isRtl ? "ر.س" : "SAR"}{" "}
-                        {isRtl ? "إلى" : "to"}{" "}
-                        {filters.priceRange[1] === Infinity
-                          ? isRtl
-                            ? "أقصى"
-                            : "Max"
-                          : filters.priceRange[1]}{" "}
-                        {isRtl ? "ر.س" : "SAR"}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              <div className="bg-neutral-50 rounded-lg p-4 border border-neutral-100">
-                <button
-                  onClick={() => toggleFilterExpansion("features")}
-                  className="w-full flex items-center justify-between text-sm font-bold text-neutral-800"
-                >
-                  <span className="flex items-center gap-2">
-                    <Sparkles size={16} className="text-purple-600" />
-                    {isRtl ? "المميزات" : "Features"}
-                  </span>
-                  {expandedFilters.includes("features") ? (
-                    <ChevronUp size={16} className="text-neutral-500" />
-                  ) : (
-                    <ChevronDown size={16} className="text-neutral-500" />
-                  )}
-                </button>
-                <AnimatePresence>
-                  {expandedFilters.includes("features") && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="mt-3 space-y-3 overflow-hidden"
-                    >
-                      {filterOptions.features.map((feature) => (
-                        <label
-                          key={feature.id}
-                          className="flex items-center gap-3 text-sm text-neutral-700 cursor-pointer hover:text-purple-600 transition-colors"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={filters.features.includes(feature.id)}
-                            onChange={() =>
-                              toggleArrayFilter("features", feature.id)
-                            }
-                            className="rounded border-neutral-300 text-purple-500 focus:ring-purple-500 w-4 h-4"
-                          />
-                          <span className="font-medium">{feature.nameKey}</span>
-                          <span className="text-xs text-neutral-400 font-normal">
-                            ({feature.count})
-                          </span>
-                        </label>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Main Content */}
-        <div className="flex-1 min-w-0">
-          <div className="bg-white rounded-2xl shadow-lg p-5 border border-neutral-100 mb-6">
-            <div className="flex flex-col sm:flex-row gap-4 items-center justify-between mb-4">
-              <div className="relative flex-1 w-full lg:hidden">
-                <Search
-                  size={16}
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400"
-                />
-                <input
-                  type="text"
-                  placeholder={t("header.search")}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-purple-400 text-sm bg-neutral-50 placeholder-neutral-400"
-                />
-              </div>
-
-              {isMobile && (
-                <button
-                  onClick={() => setShowMobileFilters(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-bold hover:bg-purple-700 transition-colors shadow-md"
-                >
-                  <Filter size={14} />
-                  {isRtl ? "فلتر" : "Filter"}
-                  {hasActiveFilters && (
-                    <span className="bg-white text-purple-600 rounded-full w-4 h-4 text-xs flex items-center justify-center font-bold">
-                      {activeFiltersCount}
-                    </span>
-                  )}
-                </button>
-              )}
-
-              <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
-                <div className="text-sm text-neutral-700 font-medium">
-                  <span className="font-bold text-purple-600">
-                    {filteredProducts.length}
-                  </span>{" "}
-                  {isRtl ? "منتج" : "products"}
-                </div>
-                <div className="relative">
-                  <select
-                    value={filters.sortBy}
-                    onChange={(e) => updateFilter("sortBy", e.target.value)}
-                    className="appearance-none pl-4 pr-10 py-2 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-purple-400 text-sm bg-neutral-50 cursor-pointer font-medium"
-                  >
-                    {filterOptions.sortOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown
-                    size={16}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400 pointer-events-none"
-                  />
-                </div>
-                <div className="flex bg-neutral-100 rounded-lg p-1 shadow-inner">
-                  <button
-                    onClick={() => setViewMode("grid")}
-                    className={`p-2 rounded-md transition-colors ${
-                      viewMode === "grid"
-                        ? "bg-white text-purple-600 shadow-sm"
-                        : "text-neutral-500 hover:bg-neutral-200"
-                    }`}
-                  >
-                    <Grid size={16} />
-                  </button>
-                  <button
-                    onClick={() => setViewMode("list")}
-                    className={`p-2 rounded-md transition-colors ${
-                      viewMode === "list"
-                        ? "bg-white text-purple-600 shadow-sm"
-                        : "text-neutral-500 hover:bg-neutral-200"
-                    }`}
-                  >
-                    <List size={16} />
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {!isMobile && (
-              <div className="mt-4 flex flex-wrap gap-2 overflow-x-auto pb-2 scrollbar-hidden">
-                {quickFilterOptions.map((option) => (
-                  <button
-                    key={option.id}
-                    onClick={() => toggleQuickFilter(option.id)}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium border transition-all duration-200 ${
-                      quickFilters.includes(option.id)
-                        ? option.color
-                        : "bg-neutral-50 text-neutral-600 border-neutral-200 hover:bg-neutral-100"
-                    }`}
-                  >
-                    {option.icon}
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="pb-8">
-            {!slug && (
-              <div className="mb-8">
-                <h2 className="text-xl font-bold text-neutral-800 mb-4 text-center">
-                  {isRtl ? "تصفح المناسبات" : "Browse Occasions"}
-                </h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                  {occasions.map((occasion, index) => (
-                    <div key={occasion.id}>
-                      <Link
-                        to={`/occasion/${occasion.id}`}
-                        className="group block"
+              <div className="px-5 py-5">
+                {/* Search inside filters */}
+                <div className="mb-4">
+                  <div className="relative">
+                    <Search
+                      size={14}
+                      className={`absolute ${
+                        isRtl ? "right-3" : "left-3"
+                      } top-1/2 -translate-y-1/2 text-neutral-400`}
+                    />
+                    <input
+                      type="text"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      placeholder={
+                        isRtl ? "ابحث داخل الفلاتر..." : "Search in filters..."
+                      }
+                      className={`h-10 w-full ${
+                        isRtl ? "pr-9 pl-3" : "pl-9 pr-3"
+                      } rounded-xl border border-neutral-200 bg-neutral-50/70 text-sm outline-none focus:border-emerald-500 focus:bg-white`}
+                    />
+                    {searchTerm && (
+                      <button
+                        onClick={() => setSearchTerm("")}
+                        className={`absolute ${
+                          isRtl ? "left-2.5" : "right-2.5"
+                        } top-1/2 -translate-y-1/2 rounded-full p-1 text-neutral-400 hover:text-neutral-600`}
+                        aria-label={isRtl ? "مسح" : "Clear"}
                       >
-                        <div className="relative aspect-square overflow-hidden rounded-2xl bg-gradient-to-br from-purple-50 to-rose-50 shadow-md hover:shadow-lg transition-all duration-300">
-                          <ProductImage
-                            src={occasion.imageUrl}
-                            alt={t(occasion.nameKey)}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                            width={200}
-                            height={200}
-                            aspectRatio="square"
-                            sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, (max-width: 1280px) 16.66vw, 200px"
-                            quality={100}
-                            priority={index < 6}
-                            showZoom={false}
-                            placeholderSize={24}
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                          <h3 className="absolute bottom-3 left-0 right-0 text-center text-sm font-bold text-white">
-                            {t(occasion.nameKey)}
-                          </h3>
-                          <div className="absolute top-2 right-2 w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            <Eye size={16} className="text-white" />
-                          </div>
+                        <X size={14} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Active chips */}
+                {hasActiveFilters && (
+                  <div className="mb-5 flex flex-wrap gap-2">
+                    {searchTerm && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-neutral-200 px-3 py-1 text-xs font-semibold text-neutral-800">
+                        {isRtl ? "بحث" : "Search"}: {searchTerm}
+                        <button
+                          onClick={() => setSearchTerm("")}
+                          className="rounded-full p-0.5 hover:bg-white/50"
+                          aria-label={isRtl ? "إزالة" : "Remove"}
+                        >
+                          <X size={12} />
+                        </button>
+                      </span>
+                    )}
+                    {(filters.priceRange[0] !== 0 ||
+                      filters.priceRange[1] !== Infinity) && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-violet-500 px-3 py-1 text-xs font-semibold text-white">
+                        {isRtl ? "السعر" : "Price"}
+                        <button
+                          onClick={() =>
+                            setFilters((p) => ({
+                              ...p,
+                              priceRange: [0, Infinity],
+                            }))
+                          }
+                          className="rounded-full p-0.5 hover:bg-white/20"
+                          aria-label={isRtl ? "إزالة" : "Remove"}
+                        >
+                          <X size={12} />
+                        </button>
+                      </span>
+                    )}
+                    {filters.features.map((f) => {
+                      const meta = filterOptions.features.find(
+                        (x) => x.id === f
+                      );
+                      if (!meta) return null;
+                      return (
+                        <span
+                          key={`chip-${f}`}
+                          className="inline-flex items-center gap-1 rounded-full bg-violet-500 px-3 py-1 text-xs font-semibold text-white"
+                        >
+                          {meta.nameKey}
+                          <button
+                            onClick={() => toggleArrayFilter("features", f)}
+                            className="rounded-full p-0.5 hover:bg-white/20"
+                            aria-label={isRtl ? "إزالة" : "Remove"}
+                          >
+                            <X size={12} />
+                          </button>
+                        </span>
+                      );
+                    })}
+                    {filters.occasions.length > (slug ? 1 : 0) &&
+                      filters.occasions
+                        .filter((o) => o !== slug)
+                        .map((o) => {
+                          const meta = occasions.find((x) => x.id === o);
+                          if (!meta) return null;
+                          return (
+                            <span
+                              key={`chip-${o}`}
+                              className="inline-flex items-center gap-1 rounded-full bg-violet-500 px-3 py-1 text-xs font-semibold text-white"
+                            >
+                              {t(meta.nameKey)}
+                              <button
+                                onClick={() =>
+                                  toggleArrayFilter("occasions", o)
+                                }
+                                className="rounded-full p-0.5 hover:bg-white/20"
+                                aria-label={isRtl ? "إزالة" : "Remove"}
+                              >
+                                <X size={12} />
+                              </button>
+                            </span>
+                          );
+                        })}
+                  </div>
+                )}
+
+                {/* Tabbed Filters */}
+                <div className="mt-4">
+                  <div className="mb-4 flex rounded-xl bg-neutral-100 p-1">
+                    <button
+                      className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                        activeFilterTab === "price"
+                          ? "bg-white text-neutral-900 shadow"
+                          : "text-neutral-600 hover:bg-neutral-200"
+                      }`}
+                      onClick={() => setActiveFilterTab("price")}
+                    >
+                      {isRtl ? "السعر" : "Price"}
+                    </button>
+                    <button
+                      className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                        activeFilterTab === "features"
+                          ? "bg-white text-neutral-900 shadow"
+                          : "text-neutral-600 hover:bg-neutral-200"
+                      }`}
+                      onClick={() => setActiveFilterTab("features")}
+                    >
+                      {isRtl ? "المميزات" : "Features"}
+                    </button>
+                    <button
+                      className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                        activeFilterTab === "occasions"
+                          ? "bg-white text-neutral-900 shadow"
+                          : "text-neutral-600 hover:bg-neutral-200"
+                      }`}
+                      onClick={() => setActiveFilterTab("occasions")}
+                    >
+                      {isRtl ? "المناسبات" : "Occasions"}
+                    </button>
+                  </div>
+
+                  <AnimatePresence mode="wait">
+                    {activeFilterTab === "price" && (
+                      <motion.div
+                        key="price-tab"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                        className="p-4"
+                      >
+                        <h4 className="mb-3 flex items-center gap-2 text-sm font-extrabold text-neutral-900">
+                          <DollarSign size={16} className="text-emerald-500" />
+                          {isRtl ? "نطاق السعر" : "Price Range"}
+                        </h4>
+                        <div className="grid gap-2">
+                          {priceRanges.map((option) => {
+                            const checked =
+                              filters.priceRange[0] === option.range[0] &&
+                              filters.priceRange[1] === option.range[1];
+                            return (
+                              <label
+                                key={option.id}
+                                className={`flex items-center justify-between rounded-full border px-3 py-2 text-sm transition-colors cursor-pointer ${
+                                  checked
+                                    ? "border-violet-500 bg-violet-500/5 text-violet-600"
+                                    : "border-neutral-200 hover:bg-neutral-100"
+                                }`}
+                              >
+                                <span className="flex items-center gap-2">
+                                  <input
+                                    type="radio"
+                                    name="priceRange"
+                                    checked={checked}
+                                    onChange={() =>
+                                      handlePriceRangeSelect(
+                                        option.range[0],
+                                        option.range[1]
+                                      )
+                                    }
+                                    className="h-4 w-4 rounded-full border-neutral-300 text-violet-500 focus:ring-violet-500"
+                                  />
+                                  <span className="font-medium">
+                                    {option.label}
+                                  </span>
+                                  <RiyalSymbol className="h-3.5 w-3.5" />
+                                </span>
+                              </label>
+                            );
+                          })}
                         </div>
-                      </Link>
-                    </div>
-                  ))}
+                      </motion.div>
+                    )}
+                    {activeFilterTab === "features" && (
+                      <motion.div
+                        key="features-tab"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                        className="p-4"
+                      >
+                        <h4 className="mb-3 flex items-center gap-2 text-sm font-extrabold text-neutral-900">
+                          <Sparkles size={16} className="text-emerald-500" />
+                          {isRtl ? "المميزات" : "Features"}
+                        </h4>
+                        <div className="grid gap-2">
+                          {filterOptions.features.map((feature) => {
+                            const active = filters.features.includes(
+                              feature.id
+                            );
+                            return (
+                              <label
+                                key={feature.id}
+                                className={`flex items-center justify-between rounded-full border px-3 py-2 text-sm transition-colors cursor-pointer ${
+                                  active
+                                    ? "border-violet-500 bg-violet-500/5 text-violet-600"
+                                    : "border-neutral-200 hover:bg-neutral-100"
+                                }`}
+                              >
+                                <span className="flex items-center gap-2">
+                                  <input
+                                    type="checkbox"
+                                    checked={active}
+                                    onChange={() =>
+                                      toggleArrayFilter("features", feature.id)
+                                    }
+                                    className="h-4 w-4 rounded border-neutral-300 text-violet-500 focus:ring-violet-500"
+                                  />
+                                  <span className="flex items-center gap-2 font-medium">
+                                    {feature.icon} {feature.nameKey}
+                                  </span>
+                                </span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </motion.div>
+                    )}
+                    {activeFilterTab === "occasions" && (
+                      <motion.div
+                        key="occasions-tab"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                        className="p-4"
+                      >
+                        <h4 className="mb-3 flex items-center gap-2 text-sm font-extrabold text-neutral-900">
+                          <Tag size={16} className="text-emerald-500" />
+                          {isRtl ? "المناسبات" : "Occasions"}
+                        </h4>
+                        <div className="grid gap-2">
+                          {filterOptions.occasions.map((occasion) => {
+                            const active = filters.occasions.includes(
+                              occasion.id
+                            );
+                            return (
+                              <label
+                                key={occasion.id}
+                                className={`flex items-center justify-between rounded-full border px-3 py-2 text-sm transition-colors cursor-pointer ${
+                                  active
+                                    ? "border-violet-500 bg-violet-500/5 text-violet-600"
+                                    : "border-neutral-200 hover:bg-neutral-100"
+                                }`}
+                              >
+                                <span className="flex items-center gap-2">
+                                  <input
+                                    type="checkbox"
+                                    checked={active}
+                                    onChange={() =>
+                                      toggleArrayFilter(
+                                        "occasions",
+                                        occasion.id
+                                      )
+                                    }
+                                    className="h-4 w-4 rounded border-neutral-300 text-violet-500 focus:ring-violet-500"
+                                  />
+                                  <span className="flex items-center gap-2 font-medium">
+                                    {t(occasion.nameKey)}
+                                  </span>
+                                </span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
-            )}
+            </div>
+          </motion.aside>
 
+          {/* Main Content */}
+          <div className="lg:col-span-1 flex-1">
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="relative z-20 mb-6 rounded-3xl border border-neutral-100/30 bg-white/50 p-4 shadow-[0_8px_32px_0_rgba(31,38,135,0.1)] backdrop-blur-md"
+            >
+              <div className="flex flex-row items-center justify-between gap-3 sm:gap-4">
+                {/* Search Input */}
+                <div className="relative flex-1">
+                  <Search
+                    size={16}
+                    className={`pointer-events-none absolute ${
+                      isRtl ? "right-4" : "left-4"
+                    } top-1/2 -translate-y-1/2 text-neutral-400`}
+                  />
+                  <input
+                    type="text"
+                    placeholder={isRtl ? "ابحث عن هدايا..." : "Search gifts..."}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className={`h-11 w-full ${
+                      isRtl ? "pr-11 pl-4" : "pl-11 pr-4"
+                    } rounded-full border border-neutral-200/50 bg-neutral-100/50 text-sm text-neutral-800 placeholder-neutral-400 outline-none transition-colors focus:border-fuchsia-500 focus:bg-white/80`}
+                  />
+                  {searchTerm && (
+                    <button
+                      onClick={() => setSearchTerm("")}
+                      className={`absolute ${
+                        isRtl ? "left-3" : "right-3"
+                      } top-1/2 -translate-y-1/2 rounded-full p-1.5 text-neutral-400 hover:text-neutral-600`}
+                      aria-label={isRtl ? "مسح البحث" : "Clear search"}
+                    >
+                      <X size={16} />
+                    </button>
+                  )}
+                </div>
+
+                {/* Filters & Sort Buttons (Mobile & Desktop) */}
+                <div className="flex items-center gap-3">
+                  {/* Sort Button */}
+                  <div className="relative z-30" ref={sortDropdownRef}>
+                    <button
+                      onClick={() => setShowSortOptions(!showSortOptions)}
+                      className="flex items-center gap-1 rounded-full border border-neutral-200/50 bg-white/70 px-2 py-2 text-sm sm:px-4 sm:py-2.5 sm:text-sm font-medium text-neutral-700 backdrop-blur-sm hover:bg-neutral-100/70"
+                    >
+                      <span className="w-20 sm:w-28 overflow-hidden text-ellipsis whitespace-nowrap font-semibold text-neutral-900">
+                        {filters.sortBy
+                          ? `${
+                              isRtl ? "ترتيب حسب: " : "Sort By: "
+                            }${getSortLabel(filters.sortBy)}`
+                          : isRtl
+                          ? "ترتيب حسب"
+                          : "Sort By"}
+                      </span>
+                      <ChevronDown
+                        size={16}
+                        className="text-neutral-400 flex-shrink-0"
+                      />
+                    </button>
+                    <AnimatePresence>
+                      {showSortOptions && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -8 }}
+                          transition={{ duration: 0.16 }}
+                          className={`absolute mt-2 w-52 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl ${
+                            isRtl ? "left-0" : "right-0"
+                          }`}
+                        >
+                          {filterOptions.sortOptions.map((option) => (
+                            <button
+                              key={option.value}
+                              onClick={() => {
+                                updateFilter("sortBy", option.value);
+                                setShowSortOptions(false);
+                              }}
+                              className={`w-full ${
+                                isRtl ? "text-right" : "text-left"
+                              } px-4 py-2 text-sm transition-colors hover:bg-emerald-500/10 ${
+                                filters.sortBy === option.value
+                                  ? "bg-emerald-500/10 text-neutral-900"
+                                  : "text-neutral-700"
+                              }`}
+                            >
+                              {option.label}
+                            </button>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+
+                  {/* View Mode Buttons (Hidden on Mobile) */}
+                  <div className="hidden items-center rounded-full bg-neutral-100/50 p-1 backdrop-blur-sm sm:flex">
+                    <button
+                      onClick={() => setViewMode("grid")}
+                      className={`rounded-full p-2 ${
+                        viewMode === "grid"
+                          ? "bg-white text-emerald-500 shadow-sm"
+                          : "text-neutral-500 hover:bg-neutral-200"
+                      }`}
+                      aria-label="Grid"
+                    >
+                      <Grid size={16} />
+                    </button>
+                    <button
+                      onClick={() => setViewMode("list")}
+                      className={`rounded-full p-2 ${
+                        viewMode === "list"
+                          ? "bg-white text-emerald-500 shadow-sm"
+                          : "text-neutral-500 hover:bg-neutral-200"
+                      }`}
+                      aria-label="List"
+                    >
+                      <List size={16} />
+                    </button>
+                  </div>
+
+                  {/* Mobile Filters Button */}
+                  {isMobile && (
+                    <button
+                      onClick={() => setShowMobileFilters(true)}
+                      className="flex items-center gap-2 rounded-full bg-violet-500/70 px-4 py-2 text-sm font-bold text-white backdrop-blur-sm hover:bg-violet-600/70"
+                    >
+                      <Filter size={14} />
+                      {activeFiltersCount > 0 && (
+                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-xs font-bold text-violet-500">
+                          {activeFiltersCount}
+                        </span>
+                      )}
+                    </button>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Products */}
             <AnimatePresence mode="wait">
               {isLoading ? (
                 <motion.div
@@ -733,9 +835,9 @@ const OccasionsPage: React.FC = () => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="flex justify-center items-center py-16"
+                  className="flex items-center justify-center py-20"
                 >
-                  <div className="animate-spin rounded-full h-10 w-10 border-4 border-purple-600 border-t-transparent"></div>
+                  <div className="h-12 w-12 animate-spin rounded-full border-4 border-t-transparent border-emerald-500" />
                 </motion.div>
               ) : filteredProducts.length > 0 ? (
                 viewMode === "grid" ? (
@@ -744,72 +846,97 @@ const OccasionsPage: React.FC = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+                    className="relative z-10 grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 w-full min-w-[0]"
+                    style={{ contain: "layout" }}
                   >
-                    {filteredProducts.map((product, index) => (
-                      <div
-                        key={product.id}
-                        className="bg-white rounded-xl shadow-md border border-neutral-100 overflow-hidden relative transition-transform duration-300"
-                      >
-                        <Link to={`/product/${product.id}`} className="block">
-                          <div className="relative aspect-[4/3] overflow-hidden group">
-                            <ProductImage
-                              src={product.imageUrl}
-                              alt={isRtl ? product.nameAr : product.nameEn}
-                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                              width={240}
-                              height={180}
-                              aspectRatio="landscape"
-                              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                              quality={100}
-                              priority={index < 8}
-                              showZoom={false}
-                              placeholderSize={28}
-                            />
-                            <div className="absolute top-2 left-2 flex flex-col gap-1">
-                              {product.isBestSeller && (
-                                <span className="bg-amber-100 text-amber-800 text-xs font-bold py-0.5 px-1.5 rounded-full flex items-center gap-1 shadow-sm">
-                                  <Flame size={10} />
-                                  {isRtl ? "الأكثر مبيعاً" : "Best Seller"}
+                    <AnimatePresence>
+                      {filteredProducts.map((product, index) => (
+                        <motion.div
+                          key={`product-${product.id}`}
+                          variants={productCardVariants}
+                          initial="hidden"
+                          animate="visible"
+                          exit="exit"
+                          custom={index}
+                          layout
+                          className="group flex w-full flex-col overflow-hidden rounded-3xl"
+                          style={{ minWidth: 0 }}
+                        >
+                          <Link
+                            to={`/product/${product.id}`}
+                            className="block flex-1"
+                          >
+                            <div className="relative aspect-[4/4.4] sm:aspect-[4/4.7] overflow-hidden rounded-t-3xl rounded-b-3xl">
+                              <ProductImage
+                                src={product.imageUrl}
+                                alt={isRtl ? product.nameAr : product.nameEn}
+                                className="h-full w-full object-cover rounded-t-3xl rounded-b-3xl"
+                                width={400}
+                                height={500}
+                                aspectRatio="portrait"
+                                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                                quality={100}
+                                priority={index < 4}
+                                showZoom={false}
+                                placeholderSize={80}
+                                enableBlurUp={true}
+                              />
+                              <div className="absolute start-2 top-2 flex flex-col gap-1">
+                                {product.isBestSeller && (
+                                  <span className="inline-flex w-fit items-center gap-1 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 px-2 py-0.5 text-[10px] font-medium text-white shadow">
+                                    <Flame size={10} />
+                                    {isRtl ? "الأكثر مبيعاً" : "Best Seller"}
+                                  </span>
+                                )}
+                                {product.isSpecialGift && (
+                                  <span className="inline-flex w-fit items-center gap-1 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-2 py-0.5 text-[10px] font-medium text-white shadow">
+                                    <Sparkles size={10} />
+                                    {isRtl ? "مميز" : "Special"}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </Link>
+                          <div className="p-3 flex flex-col h-full">
+                            <Link
+                              to={`/product/${product.id}`}
+                              className="block mb-1"
+                            >
+                              <h3 className="line-clamp-2 text-base font-bold text-neutral-900 ">
+                                {isRtl ? product.nameAr : product.nameEn}
+                              </h3>
+                            </Link>
+                            <p className="line-clamp-2 text-xs text-neutral-500 mb-3">
+                              {isRtl
+                                ? product.descriptionAr
+                                : product.descriptionEn}
+                            </p>
+                            <div className="flex items-center justify-between mt-auto">
+                              <div
+                                className={`flex items-center gap-1 ${
+                                  isRtl ? "flex-row-reverse" : ""
+                                }`}
+                              >
+                                <RiyalSymbol className="h-4 w-4 text-emerald-600" />
+                                <span className="text-base font-bold text-neutral-900">
+                                  {product.price}
                                 </span>
-                              )}
-                              {product.isSpecialGift && (
-                                <span className="bg-purple-100 text-purple-800 text-xs font-bold py-0.5 px-1.5 rounded-full flex items-center gap-1 shadow-sm">
-                                  <Sparkles size={10} />
-                                  {isRtl ? "مميز" : "Special"}
-                                </span>
-                              )}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <FavoriteButton
+                                  product={product}
+                                  className="shadow-md"
+                                />
+                                <AddToCartButton
+                                  product={product}
+                                  className="shadow-md"
+                                />
+                              </div>
                             </div>
                           </div>
-                        </Link>
-                        <div className="p-3 relative">
-                          <div className="absolute top-0 right-3 transform -translate-y-1/2">
-                            <FavoriteButton
-                              product={product}
-                              className="w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center text-rose-500 border border-neutral-100 transition-all duration-300 hover:scale-110"
-                              size={16}
-                            />
-                          </div>
-                          <Link to={`/product/${product.id}`}>
-                            <h3 className="text-sm font-bold text-neutral-800 hover:text-purple-600 transition-colors line-clamp-2 mb-1 min-h-[2.5rem]">
-                              {isRtl ? product.nameAr : product.nameEn}
-                            </h3>
-                          </Link>
-                          <div className="flex items-center justify-between mt-2">
-                            <p className="text-base font-bold text-purple-700">
-                              {product.price} {isRtl ? "ر.س" : "SAR"}
-                            </p>
-                            <AddToCartButton
-                              product={product}
-                              variant="primary"
-                              size="sm"
-                              className="px-3 py-1.5 bg-purple-600 text-white rounded-lg shadow-md text-xs font-semibold hover:bg-purple-700 transition-colors"
-                              showLabel={!isMobile}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
                   </motion.div>
                 ) : (
                   <motion.div
@@ -817,70 +944,92 @@ const OccasionsPage: React.FC = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="space-y-4"
+                    className="relative z-10 space-y-4 w-full min-w-[0]"
+                    style={{ contain: "layout" }}
                   >
-                    {filteredProducts.map((product, index) => (
-                      <div
-                        key={product.id}
-                        className="bg-white rounded-xl shadow-md border border-neutral-100 p-4 flex flex-col sm:flex-row gap-4 items-start transition-transform duration-300"
-                      >
-                        <Link
-                          to={`/product/${product.id}`}
-                          className="flex-shrink-0 w-28 h-28"
+                    <AnimatePresence>
+                      {filteredProducts.map((product, index) => (
+                        <motion.div
+                          key={`list-product-${product.id}`}
+                          variants={productCardVariants}
+                          initial="hidden"
+                          animate="visible"
+                          exit="exit"
+                          custom={index}
+                          layout
+                          className="flex flex-col items-start gap-4 rounded-3xl p-4 sm:flex-row border border-neutral-100/60 bg-white shadow-md"
+                          style={{ minWidth: 0 }}
                         >
-                          <ProductImage
-                            src={product.imageUrl}
-                            alt={isRtl ? product.nameAr : product.nameEn}
-                            className="w-full h-full object-cover rounded-lg shadow-sm"
-                            width={112}
-                            height={112}
-                            aspectRatio="square"
-                            sizes="112px"
-                            quality={100}
-                            priority={index < 4}
-                            showZoom={false}
-                          />
-                        </Link>
-                        <div className="flex-1 flex flex-col justify-between w-full">
-                          <div>
-                            <Link to={`/product/${product.id}`}>
-                              <h3 className="text-base font-bold text-neutral-800 hover:text-purple-600 transition-colors mb-1">
-                                {isRtl ? product.nameAr : product.nameEn}
-                              </h3>
-                            </Link>
-                            <div className="flex flex-wrap gap-1.5 mb-2">
-                              {product.isBestSeller && (
-                                <span className="bg-amber-100 text-amber-800 text-xs px-1.5 py-0.5 rounded-full font-semibold">
-                                  {isRtl ? "الأكثر مبيعاً" : "Best Seller"}
-                                </span>
-                              )}
-                              {product.isSpecialGift && (
-                                <span className="bg-purple-100 text-purple-800 text-xs px-1.5 py-0.5 rounded-full font-semibold">
-                                  {isRtl ? "مميز" : "Special"}
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-sm text-neutral-600 line-clamp-2">
-                              {isRtl
-                                ? product.descriptionAr
-                                : product.descriptionEn}
-                            </p>
-                          </div>
-                          <div className="flex items-center justify-between mt-3">
-                            <p className="text-lg font-bold text-purple-700">
-                              {product.price} {isRtl ? "ر.س" : "SAR"}
-                            </p>
-                            <AddToCartButton
-                              product={product}
-                              variant="primary"
-                              size="sm"
-                              className="px-3 py-1.5 bg-purple-600 text-white rounded-lg shadow-md text-xs font-semibold hover:bg-purple-700 transition-colors"
-                              showLabel={true}
+                          <Link
+                            to={`/product/${product.id}`}
+                            className="h-28 w-28 flex-shrink-0 overflow-hidden rounded-2xl border border-neutral-100 bg-neutral-50"
+                          >
+                            <ProductImage
+                              src={product.imageUrl}
+                              alt={isRtl ? product.nameAr : product.nameEn}
+                              className="h-full w-full rounded-2xl object-cover"
+                              width={200}
+                              height={200}
+                              aspectRatio="square"
+                              sizes="112px"
+                              quality={100}
+                              priority={index < 2}
+                              showZoom={false}
+                              placeholderSize={80}
+                              enableBlurUp={true}
                             />
+                          </Link>
+                          <div className="flex w-full flex-1 flex-col justify-between">
+                            <div>
+                              <div className="mb-2">
+                                <Link to={`/product/${product.id}`}>
+                                  <h3 className="text-lg font-bold text-neutral-900  transition-colors duration-200 leading-tight">
+                                    {isRtl ? product.nameAr : product.nameEn}
+                                  </h3>
+                                </Link>
+                              </div>
+                              <div className="mb-3 flex flex-wrap gap-2">
+                                {product.isBestSeller && (
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
+                                    <Flame size={12} />
+                                    {isRtl ? "الأكثر مبيعاً" : "Best Seller"}
+                                  </span>
+                                )}
+                                {product.isSpecialGift && (
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
+                                    <Sparkles size={12} />
+                                    {isRtl ? "مميز" : "Special"}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="line-clamp-2 text-sm text-neutral-600 leading-relaxed mb-3">
+                                {isRtl
+                                  ? product.descriptionAr
+                                  : product.descriptionEn}
+                              </p>
+                            </div>
+                            <div className="flex items-center justify-between pt-2">
+                              <div className="flex items-center gap-1">
+                                <RiyalSymbol className="h-4 w-4 text-emerald-600" />
+                                <span className="text-base font-bold text-neutral-900">
+                                  {product.price}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <FavoriteButton
+                                  product={product}
+                                  className="shadow-md"
+                                />
+                                <AddToCartButton
+                                  product={product}
+                                  className="shadow-md"
+                                />
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                    ))}
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
                   </motion.div>
                 )
               ) : (
@@ -888,22 +1037,23 @@ const OccasionsPage: React.FC = () => {
                   key="no-products"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="text-center py-16 bg-white rounded-xl shadow-md border border-neutral-100"
+                  className="rounded-3xl border border-neutral-100/60 bg-white/80 p-10 text-center shadow-[0_6px_24px_-8px_rgba(0,0,0,0.08)] w-full min-w-[0]"
+                  style={{ contain: "layout" }}
                 >
-                  <div className="w-20 h-20 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-5 shadow-inner">
-                    <Search size={32} className="text-neutral-400" />
+                  <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-neutral-100">
+                    <Gift size={40} className="text-neutral-400" />
                   </div>
-                  <h3 className="text-lg font-bold text-neutral-800 mb-2">
+                  <h3 className="mb-2 text-2xl font-extrabold text-neutral-900">
                     {isRtl ? "لا توجد منتجات" : "No Products Found"}
                   </h3>
-                  <p className="text-neutral-600 mb-6 text-sm max-w-sm mx-auto font-medium">
+                  <p className="mx-auto mb-8 max-w-sm text-sm text-neutral-600">
                     {isRtl
-                      ? "لا توجد منتجات تطابق معايير البحث. جرب تعديل الفلاتر أو مسحها."
-                      : "No products match your search criteria. Try adjusting or clearing filters."}
+                      ? "لا توجد منتجات تطابق معايير البحث. جرب تعديل الفلاتر."
+                      : "No products match the criteria. Try adjusting filters."}
                   </p>
                   <button
+                    className="mx-auto flex items-center gap-2 rounded-full bg-violet-500 px-6 py-3 text-sm font-bold text-white hover:opacity-95"
                     onClick={clearFilters}
-                    className="px-5 py-2.5 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors flex items-center gap-2 mx-auto text-sm font-bold shadow-md"
                   >
                     <X size={14} />
                     {isRtl ? "مسح الفلاتر" : "Clear Filters"}
@@ -912,7 +1062,7 @@ const OccasionsPage: React.FC = () => {
               )}
             </AnimatePresence>
           </div>
-        </div>
+        </main>
       </div>
 
       {/* Mobile Filters Modal */}
@@ -922,124 +1072,83 @@ const OccasionsPage: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 z-50 bg-black/60 flex items-end"
             onClick={() => setShowMobileFilters(false)}
           >
             <motion.div
-              initial={{ x: isRtl ? "100%" : "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: isRtl ? "100%" : "-100%" }}
-              className={`fixed inset-y-0 ${
-                isRtl ? "right-0" : "left-0"
-              } w-11/12 sm:w-80 bg-white shadow-2xl overflow-y-auto p-6 rounded-l-2xl lg:rounded-none transition-transform duration-300 ease-out`}
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              className="w-full max-h-[80vh] overflow-y-auto bg-white rounded-t-3xl p-5 shadow-xl"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between mb-6 border-b border-neutral-200 pb-3">
-                <h3 className="flex items-center gap-2 text-lg font-bold text-purple-800">
-                  <Filter size={18} />
-                  {isRtl ? "فلاتر البحث" : "Search Filters"}
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-neutral-900 flex items-center gap-2">
+                  <Filter size={16} className="text-emerald-500" />
+                  {isRtl ? "الفلاتر" : "Filters"}
                 </h3>
                 <button
                   onClick={() => setShowMobileFilters(false)}
-                  className="p-2 hover:bg-neutral-100 rounded-full transition-colors text-neutral-600"
+                  className="p-1.5 text-neutral-600 hover:text-neutral-800"
+                  aria-label={isRtl ? "إغلاق" : "Close"}
                 >
-                  <X size={18} />
+                  <X size={16} />
                 </button>
               </div>
-
-              <div className="space-y-5">
-                <div>
-                  <h4 className="flex items-center gap-2 text-sm font-bold text-neutral-800 mb-3">
-                    <Sparkles size={16} className="text-purple-600" />
-                    {isRtl ? "فلاتر سريعة" : "Quick Filters"}
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {quickFilterOptions.map((option) => (
-                      <button
-                        key={option.id}
-                        onClick={() => toggleQuickFilter(option.id)}
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium border transition-all duration-200 ${
-                          quickFilters.includes(option.id)
-                            ? option.color
-                            : "bg-neutral-50 text-neutral-600 border-neutral-200 hover:bg-neutral-100"
-                        }`}
-                      >
-                        {option.icon}
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h4 className="flex items-center gap-2 text-sm font-bold text-neutral-800 mb-3">
-                    <Tag size={16} className="text-purple-600" />
-                    {isRtl ? "المناسبات" : "Occasions"}
-                  </h4>
-                  <div className="space-y-3">
-                    {filterOptions.occasions.map((occasion) => (
-                      <label
-                        key={occasion.id}
-                        className="flex items-center gap-3 text-sm text-neutral-700 cursor-pointer hover:text-purple-600 transition-colors"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={filters.occasions.includes(occasion.id)}
-                          onChange={() =>
-                            toggleArrayFilter("occasions", occasion.id)
-                          }
-                          className="rounded border-neutral-300 text-purple-500 focus:ring-purple-500 w-4 h-4"
-                        />
-                        <span className="font-medium">
-                          {t(occasion.nameKey)}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h4 className="flex items-center gap-2 text-sm font-bold text-neutral-800 mb-3">
-                    <DollarSign size={16} className="text-purple-600" />
+              <div className="space-y-4">
+                <div className="border-b border-neutral-200 pb-4">
+                  <h4 className="mb-2 text-sm font-semibold text-neutral-800 flex items-center gap-1.5">
+                    <DollarSign size={14} className="text-emerald-500" />
                     {isRtl ? "نطاق السعر" : "Price Range"}
                   </h4>
-                  <div className="space-y-3">
-                    {priceRanges.map((rangeOption) => (
+                  <div className="grid grid-cols-2 gap-2">
+                    {priceRanges.map((option) => (
                       <label
-                        key={rangeOption.id}
-                        className="flex items-center gap-3 text-sm text-neutral-700 cursor-pointer hover:text-purple-600 transition-colors"
+                        key={option.id}
+                        className={`flex items-center gap-2 p-2 rounded-lg text-sm cursor-pointer transition-colors ${
+                          filters.priceRange[0] === option.range[0] &&
+                          filters.priceRange[1] === option.range[1]
+                            ? "bg-emerald-100 text-emerald-700"
+                            : "bg-neutral-50 hover:bg-neutral-100"
+                        }`}
                       >
                         <input
                           type="radio"
                           name="priceRange"
                           checked={
-                            filters.priceRange[0] === rangeOption.range[0] &&
-                            filters.priceRange[1] === rangeOption.range[1]
+                            filters.priceRange[0] === option.range[0] &&
+                            filters.priceRange[1] === option.range[1]
                           }
                           onChange={() =>
                             handlePriceRangeSelect(
-                              rangeOption.range[0],
-                              rangeOption.range[1]
+                              option.range[0],
+                              option.range[1]
                             )
                           }
-                          className="rounded-full border-neutral-300 text-purple-500 focus:ring-purple-500 w-4 h-4"
+                          className="h-4 w-4 text-emerald-500 focus:ring-emerald-400"
                         />
-                        <span className="font-medium">{rangeOption.label}</span>
+                        <span className="flex items-center gap-1 text-sm">
+                          {option.label}
+                          <RiyalSymbol className="h-3 w-3" />
+                        </span>
                       </label>
                     ))}
                   </div>
                 </div>
-
-                <div>
-                  <h4 className="flex items-center gap-2 text-sm font-bold text-neutral-800 mb-3">
-                    <Sparkles size={16} className="text-purple-600" />
+                <div className="border-b border-neutral-200 pb-4">
+                  <h4 className="mb-2 text-sm font-semibold text-neutral-800 flex items-center gap-1.5">
+                    <Sparkles size={14} className="text-emerald-500" />
                     {isRtl ? "المميزات" : "Features"}
                   </h4>
-                  <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-2">
                     {filterOptions.features.map((feature) => (
                       <label
                         key={feature.id}
-                        className="flex items-center gap-3 text-sm text-neutral-700 cursor-pointer hover:text-purple-600 transition-colors"
+                        className={`flex items-center gap-2 p-2 rounded-lg text-sm cursor-pointer transition-colors ${
+                          filters.features.includes(feature.id)
+                            ? "bg-emerald-100 text-emerald-700"
+                            : "bg-neutral-50 hover:bg-neutral-100"
+                        }`}
                       >
                         <input
                           type="checkbox"
@@ -1047,33 +1156,61 @@ const OccasionsPage: React.FC = () => {
                           onChange={() =>
                             toggleArrayFilter("features", feature.id)
                           }
-                          className="rounded border-neutral-300 text-purple-500 focus:ring-purple-500 w-4 h-4"
+                          className="h-4 w-4 text-emerald-500 focus:ring-emerald-400"
                         />
-                        <span className="font-medium">{feature.nameKey}</span>
+                        <span className="flex items-center gap-1 text-sm">
+                          {feature.icon} {feature.nameKey}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div className="border-b border-neutral-200 pb-4">
+                  <h4 className="mb-2 text-sm font-semibold text-neutral-800 flex items-center gap-1.5">
+                    <Tag size={14} className="text-emerald-500" />
+                    {isRtl ? "المناسبات" : "Occasions"}
+                  </h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    {filterOptions.occasions.map((occasion) => (
+                      <label
+                        key={occasion.id}
+                        className={`flex items-center gap-2 p-2 rounded-lg text-sm cursor-pointer transition-colors ${
+                          filters.occasions.includes(occasion.id)
+                            ? "bg-emerald-100 text-emerald-700"
+                            : "bg-neutral-50 hover:bg-neutral-100"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={filters.occasions.includes(occasion.id)}
+                          onChange={() =>
+                            toggleArrayFilter("occasions", occasion.id)
+                          }
+                          className="h-4 w-4 text-emerald-500 focus:ring-emerald-400"
+                        />
+                        <span className="flex items-center gap-1 text-sm">
+                          {t(occasion.nameKey)}
+                        </span>
                       </label>
                     ))}
                   </div>
                 </div>
               </div>
-
-              <div className="mt-8 mb-16 pt-5 border-t border-neutral-200 space-y-3">
-                <div className="text-sm text-neutral-600 text-center font-medium">
-                  {filteredProducts.length}{" "}
-                  {isRtl ? "منتج موجود" : "products found"}
-                </div>
+              <div className="mt-4 flex gap-2 mb-40">
                 <button
-                  onClick={clearFilters}
-                  className="w-full px-4 py-3 bg-rose-50 text-rose-700 rounded-lg hover:bg-rose-100 transition-colors flex items-center justify-center gap-2 font-bold text-sm shadow-sm"
+                  onClick={() => {
+                    clearFilters();
+                    setShowMobileFilters(false);
+                  }}
+                  className="flex-1 py-2 rounded-full bg-neutral-200 text-sm font-medium text-neutral-800 hover:bg-neutral-300"
                 >
-                  <X size={16} />
-                  {isRtl ? "مسح الفلاتر" : "Clear Filters"}
+                  {isRtl ? "مسح الكل" : "Clear All"}
                 </button>
                 <button
                   onClick={() => setShowMobileFilters(false)}
-                  className="w-full px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center gap-2 font-bold text-sm shadow-md"
+                  className="flex-1 py-2 rounded-full bg-emerald-500 text-sm font-medium text-white hover:bg-emerald-600"
                 >
-                  <CheckCircle size={16} />
-                  {isRtl ? "تطبيق الفلاتر" : "Apply Filters"}
+                  {isRtl ? "تطبيق" : "Apply"}
                 </button>
               </div>
             </motion.div>
