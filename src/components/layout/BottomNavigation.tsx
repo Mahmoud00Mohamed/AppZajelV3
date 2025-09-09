@@ -61,7 +61,7 @@ const BottomNavigation: React.FC = () => {
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <div
-        className={`flex h-[60px] justify-around ${
+        className={`flex h-16 justify-around ${
           isRtl ? "flex-row-reverse" : "flex-row"
         }`}
       >
