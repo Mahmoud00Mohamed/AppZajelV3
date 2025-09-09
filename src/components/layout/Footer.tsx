@@ -9,11 +9,10 @@ import {
   ChevronRight,
   Mail,
   Phone,
-  MapPin,
   CreditCard,
-  Shield,
+  ShieldCheck,
   Truck,
-  HeadphonesIcon,
+  Headphones,
 } from "lucide-react";
 import { SiVisa, SiMastercard, SiPaypal, SiApplepay } from "react-icons/si";
 import { motion } from "framer-motion";
@@ -25,15 +24,16 @@ const Footer: React.FC = () => {
 
   return (
     <footer
-      className="bg-neutral-950 text-neutral-300"
+      className="bg-neutral-50 text-neutral-700"
       dir={isRtl ? "rtl" : "ltr"}
     >
-      <div className="bg-emerald-500/15 py-3">
-        <div className="container-custom">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+      {/* Top announcement bar */}
+      <div className="bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white py-2.5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
               {
-                icon: Shield,
+                icon: ShieldCheck,
                 text: i18n.language === "ar" ? "دفع آمن" : "Secure Payment",
               },
               {
@@ -41,7 +41,7 @@ const Footer: React.FC = () => {
                 text: i18n.language === "ar" ? "توصيل سريع" : "Fast Delivery",
               },
               {
-                icon: HeadphonesIcon,
+                icon: Headphones,
                 text: i18n.language === "ar" ? "دعم 24/7" : "24/7 Support",
               },
               {
@@ -51,32 +51,36 @@ const Footer: React.FC = () => {
             ].map(({ icon: Icon, text }, index) => (
               <motion.div
                 key={index}
-                className={`flex items-center justify-center p-1 ${
-                  isRtl ? "flex-row-reverse" : ""
-                }`}
+                className={`flex items-center ${
+                  isRtl
+                    ? "justify-end flex-row-reverse"
+                    : "justify-start flex-row"
+                } gap-2 p-2`}
                 initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
                 viewport={{ once: true }}
               >
-                <Icon size={20} className="text-emerald-500 mx-1" />
-                <p className="text-xs font-medium text-neutral-200">{text}</p>
+                <Icon size={18} className="text-white" />
+                <p className="text-xs font-semibold">{text}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </div>
 
-      <div className="container-custom py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-16">
+      {/* Main footer content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+          {/* Brand Section */}
           <div className="lg:col-span-1">
-            <Logo className="text-emerald-500 h-8" />
-            <p className="mt-6 text-neutral-400 text-sm leading-relaxed">
+            <Logo className="text-emerald-500 h-8 w-auto" />
+            <p className="mt-4 text-neutral-500 text-sm leading-relaxed">
               {i18n.language === "ar"
                 ? "نحن نقدم تجربة تسوق فريدة ومجموعة واسعة من المنتجات عالية الجودة لتلبية جميع احتياجاتك."
                 : "We provide a unique shopping experience and a wide range of high-quality products to meet all your needs."}
             </p>
-            <div className="mt-8 flex flex-wrap gap-4">
+            <div className="mt-6 flex flex-wrap gap-3">
               {[
                 { icon: Facebook, href: "#", name: "Facebook" },
                 { icon: Instagram, href: "#", name: "Instagram" },
@@ -86,26 +90,27 @@ const Footer: React.FC = () => {
                 <motion.a
                   key={name}
                   href={href}
-                  className="p-3 rounded-full text-neutral-500 hover:text-white hover:bg-violet-500 transition-colors duration-300"
+                  className="p-2 rounded-full text-neutral-500 hover:text-emerald-500 hover:bg-emerald-100 transition-colors duration-300"
                   aria-label={name}
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                 >
-                  <Icon size={20} />
+                  <Icon size={18} />
                 </motion.a>
               ))}
             </div>
           </div>
 
+          {/* Quick Links */}
           <div>
             <h3
-              className={`text-sm font-bold uppercase tracking-wider text-emerald-500 mb-6 relative pb-2 ${
+              className={`text-sm font-semibold uppercase tracking-wider text-emerald-600 mb-4 relative pb-2 ${
                 isRtl ? "after:right-0" : "after:left-0"
-              } after:absolute after:bottom-0 after:h-0.5 after:w-10 after:bg-violet-500`}
+              } after:absolute after:bottom-0 after:h-0.5 after:w-8 after:bg-emerald-500`}
             >
               {i18n.language === "ar" ? "روابط سريعة" : "Quick Links"}
             </h3>
-            <ul className="space-y-4">
+            <ul className="space-y-3">
               {[
                 {
                   to: "/about",
@@ -132,7 +137,7 @@ const Footer: React.FC = () => {
                 <li key={index}>
                   <Link
                     to={link.to}
-                    className="text-neutral-400 hover:text-violet-500 transition-colors duration-300 text-sm font-medium flex items-center gap-3 group"
+                    className="text-neutral-600 hover:text-emerald-500 transition-colors duration-300 text-sm font-medium flex items-center gap-2 group"
                   >
                     <ChevronRight
                       size={14}
@@ -151,15 +156,16 @@ const Footer: React.FC = () => {
             </ul>
           </div>
 
+          {/* Legal Links */}
           <div>
             <h3
-              className={`text-sm font-bold uppercase tracking-wider text-emerald-500 mb-6 relative pb-2 ${
+              className={`text-sm font-semibold uppercase tracking-wider text-emerald-600 mb-4 relative pb-2 ${
                 isRtl ? "after:right-0" : "after:left-0"
-              } after:absolute after:bottom-0 after:h-0.5 after:w-10 after:bg-violet-500`}
+              } after:absolute after:bottom-0 after:h-0.5 after:w-8 after:bg-emerald-500`}
             >
               {i18n.language === "ar" ? "الشروط والأحكام" : "Legal"}
             </h3>
-            <ul className="space-y-4">
+            <ul className="space-y-3">
               {[
                 {
                   to: "/terms",
@@ -177,7 +183,7 @@ const Footer: React.FC = () => {
                 <li key={index}>
                   <Link
                     to={link.to}
-                    className="text-neutral-400 hover:text-violet-500 transition-colors duration-300 text-sm font-medium flex items-center gap-3 group"
+                    className="text-neutral-600 hover:text-emerald-500 transition-colors duration-300 text-sm font-medium flex items-center gap-2 group"
                   >
                     <ChevronRight
                       size={14}
@@ -196,45 +202,25 @@ const Footer: React.FC = () => {
             </ul>
           </div>
 
+          {/* Contact Us */}
           <div>
             <h3
-              className={`text-sm font-bold uppercase tracking-wider text-emerald-500 mb-6 relative pb-2 ${
+              className={`text-sm font-semibold uppercase tracking-wider text-emerald-600 mb-4 relative pb-2 ${
                 isRtl ? "after:right-0" : "after:left-0"
-              } after:absolute after:bottom-0 after:h-0.5 after:w-10 after:bg-violet-500`}
+              } after:absolute after:bottom-0 after:h-0.5 after:w-8 after:bg-emerald-500`}
             >
               {i18n.language === "ar" ? "تواصل معنا" : "Contact Us"}
             </h3>
-            <ul className="space-y-4">
-              <li className="flex items-start gap-3">
-                <MapPin
-                  size={18}
-                  className="text-emerald-500 mt-0.5 flex-shrink-0"
-                />
-                <span className="text-neutral-400 text-sm">
-                  {i18n.language === "ar" ? (
-                    <>
-                      ١٢٣ شارع الأعمال، الطابق ١٠١
-                      <br />
-                      الرياض، المملكة العربية السعودية
-                    </>
-                  ) : (
-                    <>
-                      123 Business Ave, Suite 101
-                      <br />
-                      Riyadh, Saudi Arabia
-                    </>
-                  )}
-                </span>
-              </li>
-              <li className="flex items-center gap-3">
-                <Phone size={18} className="text-emerald-500 flex-shrink-0" />
-                <span className="text-neutral-400 text-sm">
+            <ul className="space-y-3">
+              <li className="flex items-center gap-2">
+                <Phone size={16} className="text-emerald-500 flex-shrink-0" />
+                <span className="text-neutral-600 text-sm">
                   +966 12 345 6789
                 </span>
               </li>
-              <li className="flex items-center gap-3">
-                <Mail size={18} className="text-emerald-500 flex-shrink-0" />
-                <span className="text-neutral-400 text-sm">
+              <li className="flex items-center gap-2">
+                <Mail size={16} className="text-emerald-500 flex-shrink-0" />
+                <span className="text-neutral-600 text-sm">
                   info@company.com
                 </span>
               </li>
@@ -243,24 +229,26 @@ const Footer: React.FC = () => {
         </div>
       </div>
 
-      <div className="border-t border-neutral-800 bg-neutral-900">
-        <div className="container-custom py-6">
+      {/* Bottom section */}
+      <div className="border-t border-neutral-200/50 bg-neutral-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div
             className={`flex flex-col md:flex-row items-center justify-between gap-4 ${
               isRtl ? "md:flex-row-reverse" : ""
             }`}
           >
-            <p className="text-neutral-500 text-sm font-medium">
+            <p className="text-neutral-600 text-sm font-medium">
               {i18n.language === "ar"
-                ? "© 2024 اسم الشركة. جميع الحقوق محفوظة."
-                : "© 2024 Company Name. All rights reserved."}
+                ? "© 2025 اسم الشركة. جميع الحقوق محفوظة."
+                : "© 2025 Company Name. All rights reserved."}
             </p>
 
             <div
-              className={`flex items-center gap-6`}
-              dir={isRtl ? "rtl" : "ltr"}
+              className={`flex items-center gap-4 ${
+                isRtl ? "flex-row-reverse" : ""
+              }`}
             >
-              <span className="text-neutral-400 text-sm whitespace-nowrap">
+              <span className="text-neutral-600 text-sm font-medium whitespace-nowrap">
                 {i18n.language === "ar"
                   ? "طرق الدفع المقبولة:"
                   : "Accepted Payments:"}
@@ -273,12 +261,14 @@ const Footer: React.FC = () => {
                   { icon: SiPaypal, name: "PayPal" },
                   { icon: SiApplepay, name: "ApplePay" },
                 ].map(({ icon: Icon, name }) => (
-                  <div
+                  <motion.div
                     key={name}
-                    className="bg-neutral-800 text-neutral-300 text-xs p-2 rounded"
+                    className="p-2 rounded-lg bg-neutral-200 text-neutral-600 hover:bg-emerald-100 hover:text-emerald-500 transition-colors duration-300"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                   >
-                    <Icon size={20} />
-                  </div>
+                    <Icon size={18} />
+                  </motion.div>
                 ))}
               </div>
             </div>

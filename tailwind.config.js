@@ -23,6 +23,7 @@ export default {
         success: "#4caf50",
         warning: "#ff9800",
         error: "#f44336",
+        emeraldTeal: "#c061d5",
         brown: {
           50: "#fdf7f2",
           100: "#f5e7e3",
@@ -75,9 +76,15 @@ export default {
         },
       },
       fontFamily: {
-        "sans-en": ["'Poppins'", "system-ui", "-apple-system", "sans-serif"],
-        "sans-ar": ["Tajawal", "sans-serif"],
-        serif: ["'Playfair Display'", "Georgia", "serif"],
+        "sans-en": [
+          "Inter",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "Segoe UI",
+          "sans-serif",
+        ],
+        "sans-ar": ["Cairo", "Segoe UI Arabic", "Tahoma", "sans-serif"],
+        serif: ["Amiri", "Times New Roman", "serif"],
       },
       animation: {
         float: "float 3s ease-in-out infinite",

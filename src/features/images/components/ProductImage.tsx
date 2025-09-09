@@ -73,7 +73,7 @@ const ProductImage: React.FC<ProductImageProps> = ({
         />
 
         {/* Overlay Effects */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300" />
 
         {/* Zoom Button */}
         {showZoom && imageLoaded && (
@@ -83,7 +83,7 @@ const ProductImage: React.FC<ProductImageProps> = ({
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => setIsZoomed(true)}
-            className="absolute top-3 right-3 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-lg hover:bg-white"
+            className="absolute top-3 right-3 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 hover:opacity-100 transition-all duration-300 shadow-lg hover:bg-white"
           >
             <ZoomIn size={16} className="text-gray-700" />
           </motion.button>

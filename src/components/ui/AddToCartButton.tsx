@@ -1,3 +1,5 @@
+// src/components/ui/AddToCartButton.tsx
+
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { ShoppingCart, Check } from "lucide-react";
@@ -15,17 +17,12 @@ interface AddToCartButtonProps {
     imageUrl: string;
   };
   className?: string;
-  size?: "sm" | "md" | "lg";
-  variant?: "primary" | "secondary" | "icon";
-  showLabel?: boolean;
   quantity?: number;
 }
 
 const AddToCartButton: React.FC<AddToCartButtonProps> = ({
   product,
   className = "",
-  size = "md",
-  variant = "primary",
   quantity = 1,
 }) => {
   const { addToCart } = useCart();
@@ -36,25 +33,12 @@ const AddToCartButton: React.FC<AddToCartButtonProps> = ({
   const [isAdding, setIsAdding] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
 
-  const sizeClasses = {
-    sm: "px-3 py-2 text-sm",
-    md: "px-4 py-2",
-    lg: "px-6 py-3 text-lg",
-  };
-
-  const variantClasses = {
-    primary: "bg-primary text-white hover:bg-violet-700",
-    secondary: "bg-white text-primary border border-primary hover:bg-primary/5",
-    icon: "p-2 bg-primary text-white hover:bg-violet-700 rounded-full",
-  };
-
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
     if (isAdding || justAdded) return;
 
-    // Check if user is authenticated
     if (!isAuthenticated) {
       showError(
         isRtl ? "تسجيل الدخول مطلوب" : "Login Required",
@@ -82,7 +66,7 @@ const AddToCartButton: React.FC<AddToCartButtonProps> = ({
       setTimeout(() => {
         setJustAdded(false);
         setIsAdding(false);
-      }, 2000);
+      }, 2000); // 2-second duration for the green checkmark
     } catch (error) {
       console.error("خطأ في إضافة المنتج إلى عربة التسوق:", error);
       setIsAdding(false);
@@ -93,31 +77,34 @@ const AddToCartButton: React.FC<AddToCartButtonProps> = ({
     if (justAdded) {
       return (
         <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          className="flex items-center gap-2"
+          key="check-icon"
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.3 }}
         >
-          <Check size={variant === "icon" ? 18 : 16} />
+          <Check size={18} />
         </motion.div>
       );
     }
-
     if (isAdding) {
       return (
         <motion.div
+          key="spinner-icon"
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="flex items-center gap-2"
         >
-          <ShoppingCart size={variant === "icon" ? 18 : 16} />
+          <ShoppingCart size={18} />
         </motion.div>
       );
     }
-
     return (
-      <div className="flex items-center gap-2">
-        <ShoppingCart size={variant === "icon" ? 18 : 16} />
-      </div>
+      <motion.div
+        key="cart-icon"
+        initial={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0, opacity: 0 }}
+      >
+        <ShoppingCart size={18} />
+      </motion.div>
     );
   };
 
@@ -126,18 +113,17 @@ const AddToCartButton: React.FC<AddToCartButtonProps> = ({
       onClick={handleAddToCart}
       disabled={isAdding || justAdded}
       className={`
-    flex items-center justify-center font-medium rounded-xl transition-all duration-300
-    ${sizeClasses[size]}
-    ${variantClasses[variant]}
-    ${justAdded ? "bg-green-500 hover:bg-green-600" : ""}
-    ${
-      isAdding || justAdded
-        ? "cursor-not-allowed opacity-90"
-        : "hover:shadow-lg"
-    }
-    ${className}
-  `}
-      whileTap={!isAdding && !justAdded ? { scale: 0.95 } : {}}
+        flex items-center justify-center h-8 w-8 rounded-full transition-all duration-300
+        ${
+          justAdded
+            ? "bg-emerald-500 hover:bg-emerald-600"
+            : "bg-gradient-to-r from-violet-500 to-fuchsia-500"
+        }
+        text-white shadow-sm
+        ${isAdding || justAdded ? "cursor-not-allowed opacity-90" : ""}
+        ${className}
+      `}
+      whileTap={!isAdding && !justAdded ? { scale: 0.9 } : {}}
       aria-label={
         isRtl
           ? `إضافة ${product.nameAr} إلى عربة التسوق`

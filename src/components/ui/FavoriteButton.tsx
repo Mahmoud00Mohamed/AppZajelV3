@@ -1,3 +1,5 @@
+// src/components/ui/FavoriteButton.tsx
+
 import React from "react";
 import { motion } from "framer-motion";
 import { Heart } from "lucide-react";
@@ -20,14 +22,12 @@ interface FavoriteButtonProps {
   };
   className?: string;
   size?: number;
-  showLabel?: boolean;
 }
 
 const FavoriteButton: React.FC<FavoriteButtonProps> = ({
   product,
   className = "",
   size = 18,
-  showLabel = false,
 }) => {
   const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites();
   const { showError } = useToast();
@@ -41,7 +41,6 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({
     e.preventDefault();
     e.stopPropagation();
 
-    // Check if user is authenticated
     if (!isAuthenticated) {
       showError(
         isRtl ? "تسجيل الدخول مطلوب" : "Login Required",
@@ -65,12 +64,12 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({
   return (
     <motion.button
       onClick={handleToggleFavorite}
-      className={`flex items-center justify-center transition-all duration-300 ${
-        isProductFavorite
-          ? "text-red-500 hover:text-red-600"
-          : "text-gray-400 hover:text-red-500"
-      } ${className}`}
-      whileHover={{ scale: 1 }}
+      className={`
+        flex items-center justify-center h-8 w-8 rounded-full transition-all duration-300
+        bg-white border border-neutral-200 shadow-sm
+        hover:bg-neutral-50
+        ${className}
+      `}
       whileTap={{ scale: 0.9 }}
       aria-label={
         isProductFavorite
@@ -83,27 +82,16 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({
       }
     >
       <motion.div
-        animate={isProductFavorite ? { scale: [1, 1.3, 1] } : {}}
+        animate={isProductFavorite ? { scale: [1, 1.2, 1] } : {}}
         transition={{ duration: 0.3 }}
       >
         <Heart
           size={size}
-          fill={isProductFavorite ? "currentColor" : "none"}
+          fill={isProductFavorite ? "rgb(239, 68, 68)" : "none"}
+          stroke={isProductFavorite ? "rgb(239, 68, 68)" : "rgb(156, 163, 175)"}
           className="transition-all duration-300"
         />
       </motion.div>
-
-      {showLabel && (
-        <span className="ml-2 rtl:mr-2 rtl:ml-0 text-sm font-medium">
-          {isProductFavorite
-            ? isRtl
-              ? "مفضل"
-              : "Favorited"
-            : isRtl
-            ? "أضف للمفضلة"
-            : "Add to Favorites"}
-        </span>
-      )}
     </motion.button>
   );
 };

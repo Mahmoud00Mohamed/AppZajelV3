@@ -13,7 +13,7 @@ const Logo: React.FC<LogoProps> = ({ small = false, className }) => {
 
   return (
     <div className={`flex items-center ${className || ""}`}>
-      <div className="text-emerald-500">
+      <div className="text-emerald-500 ">
         <img
           src={PigeonIcon}
           alt="Pigeon Icon"
@@ -23,14 +23,14 @@ const Logo: React.FC<LogoProps> = ({ small = false, className }) => {
       </div>
       <div className={`${small ? "ml-1.5" : "ml-2"} rtl:mr-2 rtl:ml-0`}>
         <h1
-          className={`font-bold ${
+          className={`font-bold tracking-tight ${
             small ? "text-lg" : "text-xl"
-          } text-violet-500`}
+          } text-emeraldTeal`}
         >
           {isArabic ? "زاجل السعادة" : "Zajil Al-Sa'adah"}
         </h1>
         {!small && (
-          <p className="text-xs text-neutral-400 -mt-1">
+          <p className="text-xs text-neutral-400 -mt-1 font-medium">
             {isArabic ? "هدايا مميزة" : "Premium Gifts"}
           </p>
         )}

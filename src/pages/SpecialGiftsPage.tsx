@@ -16,7 +16,7 @@ import {
   DollarSign,
   Gift,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Variants, Easing } from "framer-motion";
 import { getSpecialGifts } from "../data";
 import { ProductImage, usePreloadCriticalImages } from "../features/images";
 import FavoriteButton from "../components/ui/FavoriteButton";
@@ -66,8 +66,7 @@ const SpecialGiftsPage: React.FC = () => {
   const [isLoading] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [showSortOptions, setShowSortOptions] = useState(false);
-
-  const [activeFilterTab, setActiveFilterTab] = useState("price"); // For tabbed filters
+  const [activeFilterTab, setActiveFilterTab] = useState("price");
 
   const specialGiftsData: Product[] = useMemo(() => getSpecialGifts(), []);
   const imageUrls = useMemo(
@@ -265,22 +264,36 @@ const SpecialGiftsPage: React.FC = () => {
     return sortOption ? sortOption.label : "";
   };
 
+  const productCardVariants: Variants = {
+    hidden: { opacity: 0, scale: 0.95, transition: { duration: 0.2 } },
+    visible: (i: number) => ({
+      opacity: 1,
+      scale: 1,
+      transition: {
+        delay: i * 0.05,
+        duration: 0.3,
+        ease: "easeOut" as Easing,
+      },
+    }),
+    exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2 } },
+  };
+
   return (
     <div className="min-h-screen bg-neutral-50 text-neutral-800 font-sans antialiased p-4 sm:p-6 lg:p-10">
       <div className="mx-auto max-w-7xl">
-        <main className="grid gap-8 lg:grid-cols-[300px_1fr]">
+        <main className="grid gap-8 lg:grid-cols-[300px_1fr] w-full min-w-[0]">
           {/* Filters Sidebar */}
           <motion.aside
             initial={{ opacity: 0, x: isRtl ? 40 : -40 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
-            className="hidden lg:block"
+            className="hidden lg:block w-[300px] flex-shrink-0"
           >
             <div className="sticky top-6 rounded-3xl border border-neutral-100 bg-white shadow-[0_8px_30px_-12px_rgba(0,0,0,0.08)] overflow-hidden">
               <div className="flex items-center justify-between gap-2 px-5 py-4 bg-emerald-500/10">
                 <h3 className="flex items-center gap-2 text-base font-extrabold text-neutral-900">
                   <SlidersHorizontal size={18} className="text-emerald-500" />
-                  {isRtl ? "تخصيص الهدايا" : "Customize Gifts"}
+                  {isRtl ? "تخصيص" : "Customize"}
                 </h3>
                 {hasActiveFilters && (
                   <button
@@ -420,7 +433,7 @@ const SpecialGiftsPage: React.FC = () => {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
                         transition={{ duration: 0.2 }}
-                        className="rounded-2xl border-2 border-dashed border-neutral-300 p-4"
+                        className="p-4"
                       >
                         <h4 className="mb-3 flex items-center gap-2 text-sm font-extrabold text-neutral-900">
                           <DollarSign size={16} className="text-emerald-500" />
@@ -471,7 +484,7 @@ const SpecialGiftsPage: React.FC = () => {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
                         transition={{ duration: 0.2 }}
-                        className="rounded-2xl border-2 border-dashed border-neutral-300 p-4"
+                        className="p-4"
                       >
                         <h4 className="mb-3 flex items-center gap-2 text-sm font-extrabold text-neutral-900">
                           <Sparkles size={16} className="text-emerald-500" />
@@ -517,15 +530,16 @@ const SpecialGiftsPage: React.FC = () => {
           </motion.aside>
 
           {/* Top bar */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 flex-1">
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className="relative z-20 mb-6 rounded-3xl border border-neutral-100/60 bg-white/80 p-4 shadow-[0_6px_24px_-8px_rgba(0,0,0,0.08)]"
+              className="relative z-20 mb-6 rounded-3xl border border-neutral-100/30 bg-white/50 p-4 shadow-[0_8px_32px_0_rgba(31,38,135,0.1)] backdrop-blur-md"
             >
-              <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
-                <div className="relative w-full sm:flex-1">
+              <div className="flex flex-row items-center justify-between gap-3 sm:gap-4">
+                {/* Search Input */}
+                <div className="relative flex-1">
                   <Search
                     size={16}
                     className={`pointer-events-none absolute ${
@@ -539,7 +553,7 @@ const SpecialGiftsPage: React.FC = () => {
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className={`h-11 w-full ${
                       isRtl ? "pr-11 pl-4" : "pl-11 pr-4"
-                    } rounded-full border border-neutral-200 bg-neutral-100 text-sm text-neutral-800 placeholder-neutral-400 outline-none transition-colors focus:border-emerald-500 focus:bg-white`}
+                    } rounded-full border border-neutral-200/50 bg-neutral-100/50 text-sm text-neutral-800 placeholder-neutral-400 outline-none transition-colors focus:border-fuchsia-500 focus:bg-white/80`}
                   />
                   {searchTerm && (
                     <button
@@ -554,33 +568,27 @@ const SpecialGiftsPage: React.FC = () => {
                   )}
                 </div>
 
-                <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-end">
-                  {isMobile && (
-                    <button
-                      onClick={() => setShowMobileFilters(true)}
-                      className="flex items-center gap-2 rounded-full bg-violet-500 px-4 py-2 text-sm font-bold text-white hover:opacity-95"
-                    >
-                      <Filter size={14} />
-                      {isRtl ? "الفلاتر" : "Filters"}
-                      {activeFiltersCount > 0 && (
-                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-xs font-bold text-violet-500">
-                          {activeFiltersCount}
-                        </span>
-                      )}
-                    </button>
-                  )}
+                {/* Filters & Sort Buttons (Mobile & Desktop) */}
+                <div className="flex items-center gap-3">
+                  {/* Sort Button */}
                   <div className="relative z-30" ref={sortDropdownRef}>
                     <button
                       onClick={() => setShowSortOptions(!showSortOptions)}
-                      className="flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-100"
+                      className="flex items-center gap-1 rounded-full border border-neutral-200/50 bg-white/70 px-2 py-2 text-sm sm:px-4 sm:py-2.5 sm:text-sm font-medium text-neutral-700 backdrop-blur-sm hover:bg-neutral-100/70"
                     >
-                      <span className="hidden sm:inline">
-                        {isRtl ? "ترتيب حسب: " : "Sort by: "}
+                      <span className="w-20 sm:w-28 overflow-hidden text-ellipsis whitespace-nowrap font-semibold text-neutral-900">
+                        {filters.sortBy
+                          ? `${
+                              isRtl ? "ترتيب حسب: " : "Sort By: "
+                            }${getSortLabel(filters.sortBy)}`
+                          : isRtl
+                          ? "ترتيب حسب"
+                          : "Sort By"}
                       </span>
-                      <span className="font-semibold text-neutral-900">
-                        {getSortLabel(filters.sortBy)}
-                      </span>
-                      <ChevronDown size={16} className="text-neutral-400" />
+                      <ChevronDown
+                        size={16}
+                        className="text-neutral-400 flex-shrink-0"
+                      />
                     </button>
                     <AnimatePresence>
                       {showSortOptions && (
@@ -589,8 +597,7 @@ const SpecialGiftsPage: React.FC = () => {
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -8 }}
                           transition={{ duration: 0.16 }}
-                          className={`absolute mt-2
-w-52 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl ${
+                          className={`absolute mt-2 w-52 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl ${
                             isRtl ? "left-0" : "right-0"
                           }`}
                         >
@@ -617,7 +624,8 @@ w-52 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl ${
                     </AnimatePresence>
                   </div>
 
-                  <div className="hidden items-center rounded-full bg-neutral-100 p-1 sm:flex">
+                  {/* View Mode Buttons (Hidden on Mobile) */}
+                  <div className="hidden items-center rounded-full bg-neutral-100/50 p-1 backdrop-blur-sm sm:flex">
                     <button
                       onClick={() => setViewMode("grid")}
                       className={`rounded-full p-2 ${
@@ -641,6 +649,21 @@ w-52 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl ${
                       <List size={16} />
                     </button>
                   </div>
+
+                  {/* Mobile Filters Button */}
+                  {isMobile && (
+                    <button
+                      onClick={() => setShowMobileFilters(true)}
+                      className="flex items-center gap-2 rounded-full bg-violet-500/70 px-4 py-2 text-sm font-bold text-white backdrop-blur-sm hover:bg-violet-600/70"
+                    >
+                      <Filter size={14} />
+                      {activeFiltersCount > 0 && (
+                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-xs font-bold text-violet-500">
+                          {activeFiltersCount}
+                        </span>
+                      )}
+                    </button>
+                  )}
                 </div>
               </div>
             </motion.div>
@@ -664,86 +687,97 @@ w-52 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl ${
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="relative z-10 grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                    className="relative z-10 grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 w-full min-w-[0]"
+                    style={{ contain: "layout" }}
                   >
-                    {filteredProducts.map((product, index) => (
-                      <div
-                        key={`product-${product.id}`}
-                        className="group flex w-full flex-col overflow-hidden rounded-3xl"
-                      >
-                        <Link
-                          to={`/product/${product.id}`}
-                          className="block flex-1"
+                    <AnimatePresence>
+                      {filteredProducts.map((product, index) => (
+                        <motion.div
+                          key={`product-${product.id}`}
+                          variants={productCardVariants}
+                          initial="hidden"
+                          animate="visible"
+                          exit="exit"
+                          custom={index}
+                          layout
+                          className="group flex w-full flex-col overflow-hidden rounded-3xl"
+                          style={{ minWidth: 0 }}
                         >
-                          <div className="relative aspect-[4/4.4] sm:aspect-[4/4.7] overflow-hidden rounded-t-3xl rounded-b-3xl">
-                            <ProductImage
-                              src={product.imageUrl}
-                              alt={isRtl ? product.nameAr : product.nameEn}
-                              className="h-full w-full object-cover rounded-t-3xl rounded-b-3xl"
-                              width={400}
-                              height={500}
-                              aspectRatio="portrait"
-                              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                              quality={100}
-                              priority={index < 4}
-                              showZoom={false}
-                              placeholderSize={80}
-                              enableBlurUp={true}
-                            />
-                            <div className="absolute start-2 top-2 flex flex-col gap-1">
-                              {product.isBestSeller && (
-                                <span className="inline-flex w-fit items-center gap-1 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 px-2 py-0.5 text-[10px] font-medium text-white shadow">
-                                  <Flame size={10} />
-                                  {isRtl ? "الأكثر مبيعاً" : "Best Seller"}
-                                </span>
-                              )}
-                              {product.isSpecialGift && (
-                                <span className="inline-flex w-fit items-center gap-1 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-2 py-0.5 text-[10px] font-medium text-white shadow">
-                                  <Sparkles size={10} />
-                                  {isRtl ? "مميز" : "Special"}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </Link>
-                        <div className="relative p-3">
-                          {/* Product Name */}
                           <Link
                             to={`/product/${product.id}`}
-                            className="block mb-2"
+                            className="block flex-1"
                           >
-                            <h3 className="line-clamp-2 text-sm font-bold text-neutral-900 hover:text-emerald-600 transition-colors duration-200 leading-tight">
-                              {isRtl ? product.nameAr : product.nameEn}
-                            </h3>
-                          </Link>
-
-                          {/* Price and Actions */}
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-1">
-                              <RiyalSymbol className="h-3.5 w-3.5 text-emerald-600" />
-                              <span className="text-base font-extrabold text-emerald-700">
-                                {product.price}
-                              </span>
+                            <div className="relative aspect-[4/4.4] sm:aspect-[4/4.7] overflow-hidden rounded-t-3xl rounded-b-3xl">
+                              <ProductImage
+                                src={product.imageUrl}
+                                alt={isRtl ? product.nameAr : product.nameEn}
+                                className="h-full w-full object-cover rounded-t-3xl rounded-b-3xl"
+                                width={400}
+                                height={500}
+                                aspectRatio="portrait"
+                                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                                quality={100}
+                                priority={index < 4}
+                                showZoom={false}
+                                placeholderSize={80}
+                                enableBlurUp={true}
+                              />
+                              <div className="absolute start-2 top-2 flex flex-col gap-1">
+                                {product.isBestSeller && (
+                                  <span className="inline-flex w-fit items-center gap-1 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 px-2 py-0.5 text-[10px] font-medium text-white shadow">
+                                    <Flame size={10} />
+                                    {isRtl ? "الأكثر مبيعاً" : "Best Seller"}
+                                  </span>
+                                )}
+                                {product.isSpecialGift && (
+                                  <span className="inline-flex w-fit items-center gap-1 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-2 py-0.5 text-[10px] font-medium text-white shadow">
+                                    <Sparkles size={10} />
+                                    {isRtl ? "مميز" : "Special"}
+                                  </span>
+                                )}
+                              </div>
                             </div>
-
-                            <div className="flex items-center gap-1.5">
-                              <FavoriteButton
-                                product={product}
-                                className="flex h-7 w-7 items-center justify-center rounded-full border border-neutral-200 bg-white text-rose-500 shadow-sm transition-all duration-200 hover:bg-rose-50 hover:border-rose-200"
-                                size={14}
-                              />
-                              <AddToCartButton
-                                product={product}
-                                variant="primary"
-                                size="sm"
-                                className="rounded-full bg-violet-500 px-2.5 py-1 text-xs font-semibold text-white shadow-sm transition-all duration-200 hover:bg-violet-600"
-                                showLabel={!isMobile}
-                              />
+                          </Link>
+                          <div className="p-3 flex flex-col h-full">
+                            <Link
+                              to={`/product/${product.id}`}
+                              className="block mb-1"
+                            >
+                              <h3 className="line-clamp-2 text-base font-bold text-neutral-900 ">
+                                {isRtl ? product.nameAr : product.nameEn}
+                              </h3>
+                            </Link>
+                            <p className="line-clamp-2 text-xs text-neutral-500 mb-3">
+                              {isRtl
+                                ? product.descriptionAr
+                                : product.descriptionEn}
+                            </p>
+                            <div className="flex items-center justify-between mt-auto">
+                              <div
+                                className={`flex items-center gap-1 ${
+                                  isRtl ? "flex-row-reverse" : ""
+                                }`}
+                              >
+                                <RiyalSymbol className="h-4 w-4 text-emerald-600" />
+                                <span className="text-base font-bold text-neutral-900">
+                                  {product.price}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <FavoriteButton
+                                  product={product}
+                                  className="shadow-md"
+                                />
+                                <AddToCartButton
+                                  product={product}
+                                  className="shadow-md"
+                                />
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </div>
-                    ))}
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
                   </motion.div>
                 ) : (
                   <motion.div
@@ -751,96 +785,92 @@ w-52 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl ${
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="relative z-10 space-y-4"
+                    className="relative z-10 space-y-4 w-full min-w-[0]"
+                    style={{ contain: "layout" }}
                   >
-                    {filteredProducts.map((product, index) => (
-                      <div
-                        key={`list-product-${product.id}`}
-                        className="flex flex-col items-start gap-4 rounded-3xl p-4 sm:flex-row"
-                      >
-                        <Link
-                          to={`/product/${product.id}`}
-                          className="h-28 w-28 flex-shrink-0 overflow-hidden rounded-2xl border border-neutral-100 bg-neutral-50"
+                    <AnimatePresence>
+                      {filteredProducts.map((product, index) => (
+                        <motion.div
+                          key={`list-product-${product.id}`}
+                          variants={productCardVariants}
+                          initial="hidden"
+                          animate="visible"
+                          exit="exit"
+                          custom={index}
+                          layout
+                          className="flex flex-col items-start gap-4 rounded-3xl p-4 sm:flex-row"
+                          style={{ minWidth: 0 }}
                         >
-                          <ProductImage
-                            src={product.imageUrl}
-                            alt={isRtl ? product.nameAr : product.nameEn}
-                            className="h-full w-full rounded-2xl object-cover"
-                            width={200}
-                            height={200}
-                            aspectRatio="square"
-                            sizes="200px"
-                            quality={100}
-                            priority={index < 2}
-                            showZoom={false}
-                            placeholderSize={80}
-                            enableBlurUp={true}
-                          />
-                        </Link>
-                        <div className="flex w-full flex-1 flex-col justify-between">
-                          <div>
-                            {/* Product Title */}
-                            <div className="mb-2">
-                              <Link to={`/product/${product.id}`}>
-                                <h3 className="text-lg font-bold text-neutral-900 hover:text-emerald-600 transition-colors duration-200 leading-tight">
-                                  {isRtl ? product.nameAr : product.nameEn}
-                                </h3>
-                              </Link>
+                          <Link
+                            to={`/product/${product.id}`}
+                            className="h-28 w-28 flex-shrink-0 overflow-hidden rounded-2xl border border-neutral-100 bg-neutral-50"
+                          >
+                            <ProductImage
+                              src={product.imageUrl}
+                              alt={isRtl ? product.nameAr : product.nameEn}
+                              className="h-full w-full rounded-2xl object-cover"
+                              width={200}
+                              height={200}
+                              aspectRatio="square"
+                              sizes="200px"
+                              quality={100}
+                              priority={index < 2}
+                              showZoom={false}
+                              placeholderSize={80}
+                              enableBlurUp={true}
+                            />
+                          </Link>
+                          <div className="flex w-full flex-1 flex-col justify-between">
+                            <div>
+                              <div className="mb-2">
+                                <Link to={`/product/${product.id}`}>
+                                  <h3 className="text-lg font-bold text-neutral-900  transition-colors duration-200 leading-tight">
+                                    {isRtl ? product.nameAr : product.nameEn}
+                                  </h3>
+                                </Link>
+                              </div>
+                              <div className="mb-3 flex flex-wrap gap-2">
+                                {product.isBestSeller && (
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
+                                    <Flame size={12} />
+                                    {isRtl ? "الأكثر مبيعاً" : "Best Seller"}
+                                  </span>
+                                )}
+                                {product.isSpecialGift && (
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
+                                    <Sparkles size={12} />
+                                    {isRtl ? "مميز" : "Special"}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="line-clamp-2 text-sm text-neutral-600 leading-relaxed mb-3">
+                                {isRtl
+                                  ? product.descriptionAr
+                                  : product.descriptionEn}
+                              </p>
                             </div>
-
-                            {/* Badges */}
-                            <div className="mb-3 flex flex-wrap gap-2">
-                              {product.isBestSeller && (
-                                <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
-                                  <Flame size={12} />
-                                  {isRtl ? "الأكثر مبيعاً" : "Best Seller"}
+                            <div className="flex items-center justify-between pt-2">
+                              <div className="flex items-center gap-1">
+                                <RiyalSymbol className="h-4 w-4 text-emerald-600" />
+                                <span className="text-base font-bold text-neutral-900">
+                                  {product.price}
                                 </span>
-                              )}
-                              {product.isSpecialGift && (
-                                <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
-                                  <Sparkles size={12} />
-                                  {isRtl ? "مميز" : "Special"}
-                                </span>
-                              )}
-                            </div>
-
-                            {/* Description */}
-                            <p className="line-clamp-2 text-sm text-neutral-600 leading-relaxed mb-3">
-                              {isRtl
-                                ? product.descriptionAr
-                                : product.descriptionEn}
-                            </p>
-                          </div>
-
-                          {/* Bottom Section */}
-                          <div className="flex items-center justify-between pt-2">
-                            {/* Price */}
-                            <div className="flex items-center gap-1">
-                              <RiyalSymbol className="h-4 w-4 text-emerald-600" />
-                              <span className="text-lg font-extrabold text-emerald-700">
-                                {product.price}
-                              </span>
-                            </div>
-
-                            {/* Action Buttons */}
-                            <div className="flex items-center gap-1.5">
-                              <FavoriteButton
-                                product={product}
-                                className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-200 bg-white text-rose-500 shadow-sm transition-all duration-200 hover:bg-rose-50 hover:border-rose-200"
-                                size={16}
-                              />
-                              <AddToCartButton
-                                product={product}
-                                variant="primary"
-                                size="sm"
-                                className="rounded-full bg-violet-500 px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-violet-600"
-                                showLabel={true}
-                              />
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <FavoriteButton
+                                  product={product}
+                                  className="shadow-md"
+                                />
+                                <AddToCartButton
+                                  product={product}
+                                  className="shadow-md"
+                                />
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </div>
-                    ))}
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
                   </motion.div>
                 )
               ) : (
@@ -848,7 +878,8 @@ w-52 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl ${
                   key="no-products"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="rounded-3xl border border-neutral-100/60 bg-white/80 p-10 text-center shadow-[0_6px_24px_-8px_rgba(0,0,0,0.08)]"
+                  className="rounded-3xl border border-neutral-100/60 bg-white/80 p-10 text-center shadow-[0_6px_24px_-8px_rgba(0,0,0,0.08)] w-full min-w-[0]"
+                  style={{ contain: "layout" }}
                 >
                   <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-neutral-100">
                     <Gift size={40} className="text-neutral-400" />
@@ -882,46 +913,44 @@ w-52 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl ${
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/60"
+            className="fixed inset-0 z-50 bg-black/60 flex items-end"
             onClick={() => setShowMobileFilters(false)}
           >
             <motion.div
-              initial={{ x: isRtl ? "100%" : "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: isRtl ? "100%" : "-100%" }}
-              className={`fixed inset-y-0 ${
-                isRtl ? "right-0" : "left-0"
-              } w-full overflow-y-auto bg-white p-6 shadow-2xl transition-transform duration-300 ease-in-out sm:w-80`}
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              className="w-full max-h-[80vh] overflow-y-auto bg-white rounded-t-3xl p-5 shadow-xl"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="mb-6 flex items-center justify-between border-b border-neutral-200 pb-4">
-                <h3 className="flex items-center gap-2 text-2xl font-extrabold text-neutral-900">
-                  <Filter size={20} className="text-violet-500" />
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-neutral-900 flex items-center gap-2">
+                  <Filter size={16} className="text-emerald-500" />
                   {isRtl ? "الفلاتر" : "Filters"}
                 </h3>
                 <button
                   onClick={() => setShowMobileFilters(false)}
-                  className="rounded-full p-2 text-neutral-600 hover:bg-neutral-100"
+                  className="p-1.5 text-neutral-600 hover:text-neutral-800"
                   aria-label={isRtl ? "إغلاق" : "Close"}
                 >
-                  <X size={20} />
+                  <X size={16} />
                 </button>
               </div>
-              <div className="space-y-6">
-                <div className="rounded-2xl border border-neutral-100 p-4">
-                  <h4 className="mb-3 flex items-center gap-2 text-lg font-semibold">
-                    <DollarSign size={18} className="text-emerald-500" />
+              <div className="space-y-4">
+                <div className="border-b border-neutral-200 pb-4">
+                  <h4 className="mb-2 text-sm font-semibold text-neutral-800 flex items-center gap-1.5">
+                    <DollarSign size={14} className="text-emerald-500" />
                     {isRtl ? "نطاق السعر" : "Price Range"}
                   </h4>
-                  <div className="grid gap-3">
+                  <div className="grid grid-cols-2 gap-2">
                     {priceRanges.map((option) => (
                       <label
                         key={option.id}
-                        className={`flex items-center rounded-xl border border-neutral-200 px-4 py-3 text-base transition-colors cursor-pointer ${
+                        className={`flex items-center gap-2 p-2 rounded-lg text-sm cursor-pointer transition-colors ${
                           filters.priceRange[0] === option.range[0] &&
                           filters.priceRange[1] === option.range[1]
-                            ? "border-violet-500 bg-violet-500/5 text-violet-600"
-                            : "hover:bg-neutral-100"
+                            ? "bg-emerald-100 text-emerald-700"
+                            : "bg-neutral-50 hover:bg-neutral-100"
                         }`}
                       >
                         <input
@@ -937,29 +966,29 @@ w-52 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl ${
                               option.range[1]
                             )
                           }
-                          className="h-5 w-5 rounded-full border-neutral-300 text-violet-500 focus:ring-violet-500"
+                          className="h-4 w-4 text-emerald-500 focus:ring-emerald-400"
                         />
-                        <span className="font-medium ms-3 flex items-center gap-2">
+                        <span className="flex items-center gap-1 text-sm">
                           {option.label}
-                          <RiyalSymbol className="h-4 w-4" />
+                          <RiyalSymbol className="h-3 w-3" />
                         </span>
                       </label>
                     ))}
                   </div>
                 </div>
-                <div className="rounded-2xl border border-neutral-100 p-4">
-                  <h4 className="mb-3 flex items-center gap-2 text-lg font-semibold">
-                    <Sparkles size={18} className="text-emerald-500" />
+                <div className="border-b border-neutral-200 pb-4">
+                  <h4 className="mb-2 text-sm font-semibold text-neutral-800 flex items-center gap-1.5">
+                    <Sparkles size={14} className="text-emerald-500" />
                     {isRtl ? "المميزات" : "Features"}
                   </h4>
-                  <div className="grid gap-3">
+                  <div className="grid grid-cols-2 gap-2">
                     {filterOptions.features.map((feature) => (
                       <label
                         key={feature.id}
-                        className={`flex items-center rounded-xl border border-neutral-200 px-4 py-3 text-base transition-colors cursor-pointer ${
+                        className={`flex items-center gap-2 p-2 rounded-lg text-sm cursor-pointer transition-colors ${
                           filters.features.includes(feature.id)
-                            ? "border-violet-500 bg-violet-500/5 text-violet-600"
-                            : "hover:bg-neutral-100"
+                            ? "bg-emerald-100 text-emerald-700"
+                            : "bg-neutral-50 hover:bg-neutral-100"
                         }`}
                       >
                         <input
@@ -968,9 +997,9 @@ w-52 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl ${
                           onChange={() =>
                             toggleArrayFilter("features", feature.id)
                           }
-                          className="h-5 w-5 rounded border-neutral-300 text-violet-500 focus:ring-violet-500"
+                          className="h-4 w-4 text-emerald-500 focus:ring-emerald-400"
                         />
-                        <span className="font-medium ms-3 flex items-center gap-2">
+                        <span className="flex items-center gap-1 text-sm">
                           {feature.icon} {feature.nameKey}
                         </span>
                       </label>
@@ -978,23 +1007,21 @@ w-52 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl ${
                   </div>
                 </div>
               </div>
-              <div className="mt-8 flex justify-end">
+              <div className="mt-4 flex gap-2 mb-40">
                 <button
                   onClick={() => {
                     clearFilters();
                     setShowMobileFilters(false);
                   }}
-                  className="flex items-center gap-2 rounded-full bg-neutral-200 px-6 py-3 text-sm font-bold text-neutral-800 hover:bg-neutral-300"
+                  className="flex-1 py-2 rounded-full bg-neutral-200 text-sm font-medium text-neutral-800 hover:bg-neutral-300"
                 >
-                  <X size={14} />
-                  {isRtl ? "مسح الفلاتر" : "Clear Filters"}
+                  {isRtl ? "مسح الكل" : "Clear All"}
                 </button>
                 <button
                   onClick={() => setShowMobileFilters(false)}
-                  className={`ms-3 flex items-center gap-2 rounded-full bg-violet-500 px-6 py-3 text-sm font-bold text-white hover:opacity-95`}
+                  className="flex-1 py-2 rounded-full bg-emerald-500 text-sm font-medium text-white hover:bg-emerald-600"
                 >
-                  <Filter size={14} />
-                  {isRtl ? "تطبيق الفلاتر" : "Apply Filters"}
+                  {isRtl ? "تطبيق" : "Apply"}
                 </button>
               </div>
             </motion.div>

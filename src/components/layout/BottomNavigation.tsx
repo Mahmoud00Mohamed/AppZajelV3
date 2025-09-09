@@ -4,59 +4,46 @@ import { Link, useLocation } from "react-router-dom";
 import { useFavorites } from "../../context/FavoritesContext";
 import { useAuth } from "../../context/AuthContext";
 import { motion } from "framer-motion";
-
-// الخطوة 1: استيراد أيقونات Heroicons الحديثة والبسيطة
-import {
-  HiOutlineHome,
-  HiHome,
-  HiOutlineSquares2X2,
-  HiSquares2X2,
-  HiOutlineBell,
-  HiBell,
-  HiOutlineHeart,
-  HiHeart,
-  HiOutlineArchiveBox,
-  HiArchiveBox,
-} from "react-icons/hi2";
+import { Home, Grid, Bell, Heart, Package } from "lucide-react";
 
 const BottomNavigation: React.FC = () => {
   const { t } = useTranslation();
   const location = useLocation();
   const { favoritesCount } = useFavorites();
   const { isAuthenticated } = useAuth();
+  const isRtl = t("i18n.language") === "ar";
 
-  // الخطوة 2: تحديث مصفوفة الأيقونات لاستخدام أيقونات Heroicons
   const navItems = React.useMemo(
     () => [
       {
         id: "home",
         path: "/",
-        icon: { outline: HiOutlineHome, filled: HiHome },
+        icon: Home,
         labelKey: "bottomNav.home",
       },
       {
         id: "categories",
         path: "/categories",
-        icon: { outline: HiOutlineSquares2X2, filled: HiSquares2X2 },
+        icon: Grid,
         labelKey: "bottomNav.categories",
       },
       {
         id: "notifications",
         path: "/notifications",
-        icon: { outline: HiOutlineBell, filled: HiBell },
+        icon: Bell,
         labelKey: "bottomNav.notifications",
       },
       {
         id: "favorites",
         path: "/favorites",
-        icon: { outline: HiOutlineHeart, filled: HiHeart },
+        icon: Heart,
         labelKey: "bottomNav.favorites",
         badge: favoritesCount,
       },
       {
         id: "packages",
         path: "/packages",
-        icon: { outline: HiOutlineArchiveBox, filled: HiArchiveBox },
+        icon: Package,
         labelKey: "bottomNav.packages",
       },
     ],
@@ -70,34 +57,37 @@ const BottomNavigation: React.FC = () => {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.04)] md:hidden"
+      className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-neutral-200/50 md:hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      <div className="flex h-[65px] justify-around">
+      <div
+        className={`flex h-[60px] justify-around ${
+          isRtl ? "flex-row-reverse" : "flex-row"
+        }`}
+      >
         {navItems.map((item) => {
           const active = isActive(item.path);
-          const Icon = active ? item.icon.filled : item.icon.outline;
+          const Icon = item.icon;
 
           return (
             <Link
               key={item.id}
               to={item.path}
-              className="relative flex flex-1 flex-col items-center justify-center gap-1 pt-1 text-center"
+              className="relative flex flex-1 flex-col items-center justify-center gap-0.5 pt-1 text-center"
             >
               {active && (
                 <motion.div
                   layoutId="active-indicator"
-                  className="absolute top-0 h-1 w-8 rounded-full bg-purple-800"
+                  className="absolute top-0 h-1 w-8 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500"
                   transition={{ type: "spring", stiffness: 380, damping: 30 }}
                 />
               )}
 
               <motion.div className="relative" whileTap={{ scale: 0.9 }}>
                 <Icon
-                  // تم تعديل الحجم ليتناسب مع تصميم Heroicons
-                  size={25}
+                  size={20}
                   className={`transition-colors ${
-                    active ? "text-purple-800" : "text-gray-500"
+                    active ? "text-emeraldTeal" : "text-neutral-500"
                   }`}
                 />
 
@@ -115,8 +105,8 @@ const BottomNavigation: React.FC = () => {
               </motion.div>
 
               <span
-                className={`text-[11px] font-medium transition-colors ${
-                  active ? "text-purple-800" : "text-gray-600"
+                className={`text-[10px] font-semibold transition-colors ${
+                  active ? "text-emeraldTeal" : "text-neutral-600"
                 }`}
               >
                 {t(item.labelKey)}
