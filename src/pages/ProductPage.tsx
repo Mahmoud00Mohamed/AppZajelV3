@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
-  ShoppingCart,
   Plus,
   Minus,
   Shield,
@@ -10,7 +9,6 @@ import {
   RotateCcw,
   CheckCircle,
   Clock,
-  Package,
   Gift,
   Sparkles,
   X,
@@ -40,6 +38,21 @@ const RiyalSymbol = ({ className = "w-4 h-4" }) => (
   </svg>
 );
 
+interface Product {
+  id: number;
+  nameEn: string;
+  nameAr: string;
+  price: number;
+  imageUrl: string;
+  images?: string[];
+  isBestSeller: boolean;
+  isSpecialGift: boolean;
+  categoryId: string;
+  occasionId: string;
+  descriptionEn: string;
+  descriptionAr: string;
+}
+
 const ProductPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { i18n } = useTranslation();
@@ -48,17 +61,15 @@ const ProductPage: React.FC = () => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [activeTab, setActiveTab] = useState("description");
   const [showImageZoomModal, setShowImageZoomModal] = useState(false);
+  const [dragStart, setDragStart] = useState<number | null>(null);
 
-  const product = getProductById(parseInt(id || "0"));
+  const product = getProductById(parseInt(id || "0")) as Product | undefined;
 
   const productImages = useMemo(
     () =>
-      [
-        product?.imageUrl || "",
-        product?.imageUrl || "",
-        product?.imageUrl || "",
-        product?.imageUrl || "",
-      ].filter(Boolean),
+      product && product.images && product.images.length > 0
+        ? product.images
+        : [product?.imageUrl || ""].filter(Boolean),
     [product]
   );
 
@@ -84,6 +95,7 @@ const ProductPage: React.FC = () => {
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
+    setSelectedImageIndex(0);
   }, [id]);
 
   useEffect(() => {
@@ -105,6 +117,28 @@ const ProductPage: React.FC = () => {
       }
     };
   }, []);
+
+  const handleDragStart = (e: React.TouchEvent) => {
+    setDragStart(e.touches[0].clientX);
+  };
+
+  const handleDragEnd = (e: React.TouchEvent) => {
+    if (dragStart === null) return;
+    const dragEnd = e.changedTouches[0].clientX;
+    const dragDistance = dragEnd - dragStart;
+    const swipeThreshold = 50;
+
+    if (dragDistance > swipeThreshold) {
+      setSelectedImageIndex((prevIndex) =>
+        prevIndex > 0 ? prevIndex - 1 : productImages.length - 1
+      );
+    } else if (dragDistance < -swipeThreshold) {
+      setSelectedImageIndex((prevIndex) =>
+        prevIndex < productImages.length - 1 ? prevIndex + 1 : 0
+      );
+    }
+    setDragStart(null);
+  };
 
   const tabs = [
     {
@@ -163,7 +197,12 @@ const ProductPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-neutral-50 text-neutral-800 font-sans antialiased p-0 sm:p-6 lg:p-10">
-      <div className="mx-auto max-w-7xl">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="mx-auto max-w-7xl"
+      >
         <main className="grid gap-8 lg:grid-cols-2">
           {/* Product Image Gallery */}
           <motion.div
@@ -174,52 +213,76 @@ const ProductPage: React.FC = () => {
           >
             <div className="sticky top-0 lg:top-6 flex flex-col-reverse md:flex-row-reverse gap-4">
               {/* Thumbnails */}
-              <div className="hidden md:flex flex-col gap-2 flex-shrink-0">
-                {productImages.map((image, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setSelectedImageIndex(index)}
-                    className={`w-20 h-20 rounded-2xl overflow-hidden border-2 transition-all ${
-                      selectedImageIndex === index
-                        ? "border-pink-500 shadow-md"
-                        : "border-neutral-200 hover:border-neutral-300"
-                    }`}
-                    aria-label={`Select image ${index + 1}`}
-                  >
-                    <ProductImage
-                      src={image}
-                      alt={`Thumbnail ${index + 1}`}
-                      className="w-full h-full object-cover  "
-                      width={80}
-                      height={80}
-                      aspectRatio="square"
-                      sizes="80px"
-                      quality={100}
-                      priority={false}
-                      showZoom={false}
-                      disableHoverOpacity={true} // Add this prop
-                    />
-                  </button>
-                ))}
-              </div>
-              {/* Main Image */}
-              <div className="flex-1 bg-white lg:rounded-3xl shadow-none lg:shadow-[0_8px_30px_-12px_rgba(0,0,0,0.08)] border-none lg:border border-neutral-100 overflow-hidden relative">
-                <div className="aspect-square w-full">
-                  <ProductImage
-                    src={productImages[selectedImageIndex]}
-                    alt={isRtl ? product.nameAr : product.nameEn}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 rounded-none lg:rounded-3xl"
-                    width={800}
-                    height={800}
-                    aspectRatio="square"
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                    quality={100}
-                    priority={true}
-                    showZoom={false}
-                    disableHoverOpacity={true} // Add this prop
-                  />
+              {productImages.length > 1 && (
+                <div className="hidden md:flex flex-col gap-2 flex-shrink-0">
+                  {productImages.map((image: string, index: number) => (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedImageIndex(index)}
+                      className={`w-20 h-20 rounded-2xl overflow-hidden border-2 transition-all ${
+                        selectedImageIndex === index
+                          ? "border-pink-500 shadow-md"
+                          : "border-neutral-200 hover:border-neutral-300"
+                      }`}
+                      aria-label={`Select image ${index + 1}`}
+                    >
+                      <ProductImage
+                        src={image}
+                        alt={`Thumbnail ${index + 1}`}
+                        className="w-full h-full object-cover"
+                        width={80}
+                        height={80}
+                        aspectRatio="square"
+                        sizes="80px"
+                        quality={100}
+                        priority={false}
+                        showZoom={false}
+                        disableHoverOpacity={true}
+                      />
+                    </button>
+                  ))}
                 </div>
-                <div className="absolute start-4 top-4 flex flex-col gap-2">
+              )}
+              {/* Main Image Carousel */}
+              <div
+                className="flex-1 bg-white lg:rounded-3xl shadow-none lg:shadow-[0_8px_30px_-12px_rgba(0,0,0,0.08)] border-none lg:border border-neutral-100 overflow-hidden relative"
+                onTouchStart={handleDragStart}
+                onTouchEnd={handleDragEnd}
+              >
+                <div className="relative w-full h-full aspect-square overflow-hidden">
+                  {productImages.map((image: string, index: number) => (
+                    <div
+                      key={index}
+                      className="absolute inset-0 transition-transform duration-500 ease-in-out"
+                      style={{
+                        transform: `translateX(${
+                          (index - selectedImageIndex) * 100
+                        }%)`,
+                        zIndex:
+                          index === selectedImageIndex
+                            ? 10
+                            : index > selectedImageIndex
+                            ? 5 - (index - selectedImageIndex)
+                            : 5 - (selectedImageIndex - index),
+                      }}
+                    >
+                      <ProductImage
+                        src={image}
+                        alt={isRtl ? product.nameAr : product.nameEn}
+                        className="w-full h-full object-cover rounded-none lg:rounded-3xl"
+                        width={800}
+                        height={800}
+                        aspectRatio="square"
+                        sizes="(max-width: 1024px) 100vw, 50vw"
+                        quality={100}
+                        priority={index === selectedImageIndex}
+                        showZoom={false}
+                        disableHoverOpacity={true}
+                      />
+                    </div>
+                  ))}
+                </div>
+                <div className="absolute start-4 top-4 flex flex-col gap-2 z-20">
                   {product.isBestSeller && (
                     <span className="inline-flex w-fit items-center gap-1 rounded-full bg-gradient-to-r from-rose-500 to-fuchsia-500 px-2 py-0.5 text-xs font-medium text-white shadow">
                       <Flame size={12} />
@@ -233,25 +296,27 @@ const ProductPage: React.FC = () => {
                     </span>
                   )}
                 </div>
-                <div className="absolute end-4 top-4 flex flex-col gap-2">
+                <div className="absolute end-4 top-4 flex flex-col gap-2 z-20">
                   <FavoriteButton
                     product={product}
                     className="w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center text-rose-500 border border-neutral-100 transition-all duration-300 hover:scale-110"
                     size={18}
                   />
                 </div>
-                <div className="md:hidden absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                  {productImages.map((_, index) => (
-                    <div
-                      key={index}
-                      className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                        selectedImageIndex === index
-                          ? "bg-rose-500 w-5"
-                          : "bg-neutral-300"
-                      }`}
-                    />
-                  ))}
-                </div>
+                {productImages.length > 1 && (
+                  <div className="md:hidden absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+                    {productImages.map((_: string, index: number) => (
+                      <div
+                        key={index}
+                        className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                          selectedImageIndex === index
+                            ? "bg-rose-500 w-5"
+                            : "bg-neutral-300"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>
@@ -286,12 +351,33 @@ const ProductPage: React.FC = () => {
               <p className="text-neutral-600 text-sm mb-4">
                 {isRtl ? product.descriptionAr : product.descriptionEn}
               </p>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-4">
                 <div className="flex items-center gap-1.5 font-bold">
                   <RiyalSymbol className="w-5 h-5 text-fuchsia-600" />
                   <span className="text-2xl text-neutral-900">
                     {product.price}
                   </span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center bg-neutral-100 rounded-full border border-neutral-200">
+                    <button
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      className="w-10 h-10 rounded-full hover:bg-neutral-200 flex items-center justify-center transition-colors"
+                      aria-label={isRtl ? "تقليل الكمية" : "Decrease quantity"}
+                    >
+                      <Minus size={16} />
+                    </button>
+                    <span className="w-12 text-center font-bold text-lg text-neutral-900">
+                      {quantity}
+                    </span>
+                    <button
+                      onClick={() => setQuantity(quantity + 1)}
+                      className="w-10 h-10 rounded-full hover:bg-neutral-200 flex items-center justify-center transition-colors"
+                      aria-label={isRtl ? "زيادة الكمية" : "Increase quantity"}
+                    >
+                      <Plus size={16} />
+                    </button>
+                  </div>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2">
                   <AddToCartButton
@@ -299,38 +385,6 @@ const ProductPage: React.FC = () => {
                     quantity={quantity}
                     className="flex-1 px-4 py-2 bg-rose-500 text-white rounded-full shadow-md text-sm font-bold hover:bg-rose-600 transition-colors"
                   />
-                  <button className="flex items-center gap-2 px-4 py-2 bg-pink-100 text-pink-800 rounded-full hover:bg-pink-200 transition-colors text-sm font-bold shadow-sm">
-                    <ShoppingCart size={16} />
-                    {isRtl ? "اشتري الآن" : "Buy Now"}
-                  </button>
-                </div>
-              </div>
-            </div>
-            {/* Quantity Section */}
-            <div className="bg-white rounded-3xl shadow-[0_8px_30px_-12px_rgba(0,0,0,0.08)] p-6 border border-neutral-100">
-              <h3 className="text-lg font-bold text-neutral-800 mb-4 flex items-center gap-2">
-                <Package size={20} className="text-pink-500" />
-                {isRtl ? "الكمية" : "Quantity"}
-              </h3>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center bg-neutral-100 rounded-full border border-neutral-200">
-                  <button
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="w-10 h-10 rounded-full hover:bg-neutral-200 flex items-center justify-center transition-colors"
-                    aria-label={isRtl ? "تقليل الكمية" : "Decrease quantity"}
-                  >
-                    <Minus size={16} />
-                  </button>
-                  <span className="w-12 text-center font-bold text-lg text-neutral-900">
-                    {quantity}
-                  </span>
-                  <button
-                    onClick={() => setQuantity(quantity + 1)}
-                    className="w-10 h-10 rounded-full hover:bg-neutral-200 flex items-center justify-center transition-colors"
-                    aria-label={isRtl ? "زيادة الكمية" : "Increase quantity"}
-                  >
-                    <Plus size={16} />
-                  </button>
                 </div>
               </div>
             </div>
@@ -343,7 +397,6 @@ const ProductPage: React.FC = () => {
           transition={{ delay: 0.5, ease: "easeOut" }}
           className="mt-12 p-4 sm:p-0"
         >
-          {/* Tabs Section */}
           <div className="bg-white rounded-3xl shadow-[0_8px_30px_-12px_rgba(0,0,0,0.08)] border border-neutral-100 overflow-hidden">
             <div className="flex border-b border-neutral-200 bg-neutral-50/70">
               {tabs.map((tab) => (
@@ -498,12 +551,13 @@ const ProductPage: React.FC = () => {
         </motion.div>
         {/* Related Products */}
         {relatedProducts.length > 0 && (
-          <div className="mt-12 p-4 sm:p-0">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, ease: "easeOut" }}
-            >
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, ease: "easeOut" }}
+            className="mt-12 p-4 sm:p-0"
+          >
+            <div>
               <div className="text-center mb-8">
                 <h2 className="text-2xl font-extrabold text-neutral-900 mb-2">
                   {isRtl ? "منتجات ذات صلة" : "Related Products"}
@@ -523,7 +577,7 @@ const ProductPage: React.FC = () => {
                       initial="hidden"
                       animate="visible"
                       custom={index}
-                      className="group flex w-full flex-col overflow-hidden "
+                      className="group flex w-full flex-col overflow-hidden"
                     >
                       <Link
                         to={`/product/${relatedProduct.id}`}
@@ -548,7 +602,7 @@ const ProductPage: React.FC = () => {
                             placeholderSize={80}
                             enableBlurUp={true}
                           />
-                          <div className="absolute start-2 top-2 flex flex-col gap-1">
+                          <div className="absolute start-2 top-2 flex flex-col gap-1 z-20">
                             {relatedProduct.isBestSeller && (
                               <span className="inline-flex w-fit items-center gap-1 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 px-2 py-0.5 text-[10px] font-medium text-white shadow">
                                 <Flame size={10} />
@@ -569,7 +623,7 @@ const ProductPage: React.FC = () => {
                           to={`/product/${relatedProduct.id}`}
                           className="block mb-1"
                         >
-                          <h3 className="line-clamp-2 text-base font-bold text-neutral-900 ">
+                          <h3 className="line-clamp-2 text-base font-bold text-neutral-900">
                             {isRtl
                               ? relatedProduct.nameAr
                               : relatedProduct.nameEn}
@@ -591,7 +645,7 @@ const ProductPage: React.FC = () => {
                               {relatedProduct.price}
                             </span>
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 ">
                             <FavoriteButton
                               product={relatedProduct}
                               className="shadow-md"
@@ -607,10 +661,10 @@ const ProductPage: React.FC = () => {
                   ))}
                 </AnimatePresence>
               </div>
-            </motion.div>
-          </div>
+            </div>
+          </motion.div>
         )}
-      </div>
+      </motion.div>
 
       {/* Image Zoom Modal */}
       <AnimatePresence>

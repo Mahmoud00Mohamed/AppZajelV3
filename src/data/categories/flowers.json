@@ -5,6 +5,12 @@
     "nameAr": "باقة ورد أحمر",
     "price": 199,
     "imageUrl": "https://images.pexels.com/photos/12932954/pexels-photo-12932954.jpeg",
+    "images": [
+      "https://images.pexels.com/photos/12932954/pexels-photo-12932954.jpeg",
+      "https://images.pexels.com/photos/1058775/pexels-photo-1058775.jpeg",
+      "https://images.pexels.com/photos/931162/pexels-photo-931162.jpeg",
+      "https://images.pexels.com/photos/144429/pexels-photo-144429.jpeg"
+    ],
     "isBestSeller": true,
     "isSpecialGift": false,
     "categoryId": "flowers",
@@ -18,6 +24,11 @@
     "nameAr": "تنسيق زنابق بيضاء",
     "price": 249,
     "imageUrl": "https://images.pexels.com/photos/11986512/pexels-photo-11986512.jpeg",
+    "images": [
+      "https://images.pexels.com/photos/11986512/pexels-photo-11986512.jpeg",
+      "https://images.pexels.com/photos/278849/pexels-photo-278849.jpeg",
+      "https://images.pexels.com/photos/265856/pexels-photo-265856.jpeg"
+    ],
     "isBestSeller": false,
     "isSpecialGift": true,
     "categoryId": "flowers",
@@ -31,6 +42,11 @@
     "nameAr": "زهور موسمية متنوعة",
     "price": 179,
     "imageUrl": "https://images.pexels.com/photos/12366357/pexels-photo-12366357.jpeg",
+    "images": [
+      "https://images.pexels.com/photos/12366357/pexels-photo-12366357.jpeg",
+      "https://images.pexels.com/photos/132474/pexels-photo-132474.jpeg",
+      "https://images.pexels.com/photos/4466492/pexels-photo-4466492.jpeg"
+    ],
 
     "isBestSeller": false,
     "isSpecialGift": false,
