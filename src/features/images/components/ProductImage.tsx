@@ -2,7 +2,6 @@ import React, { useState, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import EnhancedImage from "./EnhancedImage";
 import { ZoomIn } from "lucide-react";
-
 interface ProductImageProps {
   src: string;
   alt: string;
@@ -19,6 +18,7 @@ interface ProductImageProps {
   rootMargin?: string;
   fallbackSrc?: string;
   placeholderSize?: number;
+  disableHoverOpacity?: boolean; // New prop
 }
 
 const ProductImage: React.FC<ProductImageProps> = ({
@@ -37,6 +37,7 @@ const ProductImage: React.FC<ProductImageProps> = ({
   rootMargin = "100px",
   fallbackSrc,
   placeholderSize,
+  disableHoverOpacity = false, // Default to false
 }) => {
   const [isZoomed, setIsZoomed] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -57,7 +58,7 @@ const ProductImage: React.FC<ProductImageProps> = ({
         <EnhancedImage
           src={src}
           alt={alt}
-          className="w-full h-full object-cover transition-transform duration-700 "
+          className="w-full h-full object-cover transition-transform duration-700"
           priority={priority}
           width={width}
           height={height}
@@ -73,7 +74,11 @@ const ProductImage: React.FC<ProductImageProps> = ({
         />
 
         {/* Overlay Effects */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300" />
+        <div
+          className={`absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent ${
+            disableHoverOpacity ? "" : "opacity-0 hover:opacity-100"
+          } transition-opacity duration-300`}
+        />
 
         {/* Zoom Button */}
         {showZoom && imageLoaded && (
