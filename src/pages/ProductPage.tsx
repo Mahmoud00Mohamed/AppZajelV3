@@ -14,6 +14,8 @@ import {
   X,
   MessageCircle,
   Flame,
+  GaugeCircle,
+  HeartPulse,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { allProducts, getProductById } from "../data";
@@ -51,6 +53,12 @@ interface Product {
   occasionId: string;
   descriptionEn: string;
   descriptionAr: string;
+  careTipsEn: string;
+  careTipsAr: string;
+  dimensionsEn: string;
+  dimensionsAr: string;
+  arrangementContentsEn: string;
+  arrangementContentsAr: string;
 }
 
 const ProductPage: React.FC = () => {
@@ -59,6 +67,7 @@ const ProductPage: React.FC = () => {
   const isRtl = i18n.language === "ar";
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  // Default to "description"
   const [activeTab, setActiveTab] = useState("description");
   const [showImageZoomModal, setShowImageZoomModal] = useState(false);
   const [dragStart, setDragStart] = useState<number | null>(null);
@@ -96,6 +105,8 @@ const ProductPage: React.FC = () => {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
     setSelectedImageIndex(0);
+    // Set the active tab to "description" whenever the product ID changes
+    setActiveTab("description");
   }, [id]);
 
   useEffect(() => {
@@ -140,24 +151,51 @@ const ProductPage: React.FC = () => {
     setDragStart(null);
   };
 
-  const tabs = [
-    {
-      id: "description",
-      label: isRtl ? "الوصف" : "Description",
-      icon: <MessageCircle size={16} className="text-pink-600" />,
-    },
-    {
-      id: "shipping",
-      label: isRtl ? "الشحن" : "Shipping",
-      icon: <Truck size={16} className="text-pink-600" />,
-    },
-  ];
+  const tabs = useMemo(() => {
+    const allTabs = [
+      {
+        id: "description",
+        label: isRtl ? "الوصف" : "Description",
+        icon: <MessageCircle size={16} />,
+        content: isRtl ? product?.descriptionAr : product?.descriptionEn,
+      },
+      {
+        id: "shipping",
+        label: isRtl ? "الشحن" : "Shipping",
+        icon: <Truck size={16} />,
+        // This tab is always available, so its content is considered non-empty
+        content: "shipping",
+      },
+      {
+        id: "care",
+        label: isRtl ? "نصائح العناية" : "Care Tips",
+        icon: <HeartPulse size={16} />,
+        content: isRtl ? product?.careTipsAr : product?.careTipsEn,
+      },
+      {
+        id: "dimensions",
+        label: isRtl ? "الأبعاد" : "Dimensions",
+        icon: <GaugeCircle size={16} />,
+        content: isRtl ? product?.dimensionsAr : product?.dimensionsEn,
+      },
+      {
+        id: "contents",
+        label: isRtl ? "محتويات التنسيق" : "Arrangement Contents",
+        icon: <Sparkles size={16} />,
+        content: isRtl
+          ? product?.arrangementContentsAr
+          : product?.arrangementContentsEn,
+      },
+    ];
+
+    return allTabs.filter((tab) => tab.content);
+  }, [product, isRtl]);
 
   const productCardVariants = {
-    hidden: { opacity: 0, scale: 0.95 },
+    hidden: { opacity: 0, y: 20 },
     visible: (i: number) => ({
       opacity: 1,
-      scale: 1,
+      y: 0,
       transition: {
         delay: i * 0.05,
         duration: 0.3,
@@ -169,8 +207,9 @@ const ProductPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-neutral-50 text-neutral-800 font-sans antialiased p-4 sm:p-6 lg:p-10">
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
           className="text-center p-8 bg-white rounded-3xl shadow-[0_8px_30px_-12px_rgba(0,0,0,0.08)] max-w-md mx-auto border border-neutral-100"
         >
           <div className="w-20 h-20 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
@@ -299,7 +338,7 @@ const ProductPage: React.FC = () => {
                 <div className="absolute end-4 top-4 flex flex-col gap-2 z-20">
                   <FavoriteButton
                     product={product}
-                    className="w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center text-rose-500 border border-neutral-100 transition-all duration-300 hover:scale-110"
+                    className="w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center text-rose-500 border border-neutral-100 transition-colors duration-300 hover:bg-neutral-50"
                     size={18}
                   />
                 </div>
@@ -391,164 +430,305 @@ const ProductPage: React.FC = () => {
           </motion.div>
         </main>
         {/* Tabs Sections */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, ease: "easeOut" }}
-          className="mt-12 p-4 sm:p-0"
-        >
-          <div className="bg-white rounded-3xl shadow-[0_8px_30px_-12px_rgba(0,0,0,0.08)] border border-neutral-100 overflow-hidden">
-            <div className="flex border-b border-neutral-200 bg-neutral-50/70">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`relative flex-1 py-4 px-3 font-bold transition-all flex items-center justify-center gap-2 text-sm lg:text-base ${
-                    activeTab === tab.id
-                      ? "text-neutral-900 bg-white shadow-inner-top"
-                      : "text-neutral-600 hover:text-neutral-800 hover:bg-neutral-100/70"
-                  }`}
-                >
-                  {tab.icon}
-                  <span className="hidden sm:inline">{tab.label}</span>
-                  {activeTab === tab.id && (
+        {tabs.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, ease: "easeOut" }}
+            className="mt-12 p-4 sm:p-0"
+          >
+            <div className="bg-white rounded-3xl shadow-[0_8px_30px_-12px_rgba(0,0,0,0.08)] border border-neutral-100 overflow-hidden">
+              <div className="flex border-b border-neutral-200 bg-neutral-50/70">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`relative flex-1 py-4 px-3 font-bold transition-all flex items-center justify-center gap-2 text-sm lg:text-base ${
+                      activeTab === tab.id
+                        ? "text-neutral-900 bg-white shadow-inner-top"
+                        : "text-neutral-600 hover:text-neutral-800 hover:bg-neutral-100/70"
+                    }`}
+                  >
+                    {React.cloneElement(tab.icon, {
+                      className:
+                        activeTab === tab.id
+                          ? "text-pink-600"
+                          : "text-neutral-500 group-hover:text-neutral-800",
+                    })}
+                    <span className="hidden sm:inline">{tab.label}</span>
+                    {activeTab === tab.id && (
+                      <motion.div
+                        layoutId="activeTab"
+                        className="absolute bottom-0 left-0 right-0 h-1 bg-rose-500 rounded-t-lg"
+                        transition={{
+                          type: "spring",
+                          stiffness: 300,
+                          damping: 30,
+                        }}
+                      />
+                    )}
+                  </button>
+                ))}
+              </div>
+              <div className="p-6">
+                <AnimatePresence mode="wait">
+                  {activeTab === "description" && product.descriptionEn && (
                     <motion.div
-                      layoutId="activeTab"
-                      className="absolute bottom-0 left-0 right-0 h-1 bg-rose-500 rounded-t-lg"
-                      transition={{
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 30,
-                      }}
-                    />
+                      key="description"
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -15 }}
+                      transition={{ duration: 0.2 }}
+                      className="space-y-4"
+                    >
+                      <div className="p-6 bg-white rounded-3xl border border-neutral-100 shadow-[0_8px_30px_-12px_rgba(0,0,0,0.08)]">
+                        <div className="flex items-start gap-4 mb-4">
+                          <MessageCircle
+                            size={24}
+                            className="text-pink-600 flex-shrink-0 mt-0.5"
+                          />
+                          <h3 className="text-xl font-bold text-neutral-800">
+                            {isRtl ? "تفاصيل المنتج" : "Product Details"}
+                          </h3>
+                        </div>
+                        <p className="text-neutral-600 leading-relaxed text-sm mb-6">
+                          {isRtl
+                            ? product.descriptionAr
+                            : product.descriptionEn}
+                        </p>
+                        <h4 className="font-bold text-neutral-800 mb-2 text-sm">
+                          {isRtl ? "الميزات الرئيسية" : "Key Features"}
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {[
+                            isRtl
+                              ? "جودة عالية مضمونة"
+                              : "Premium quality guaranteed",
+                            isRtl
+                              ? "تصميم أنيق وعصري"
+                              : "Elegant and modern design",
+                            isRtl
+                              ? "مناسب لجميع المناسبات"
+                              : "Perfect for all occasions",
+                            isRtl
+                              ? "تغليف فاخر مجاني"
+                              : "Free luxury packaging",
+                          ].map((feature, index) => (
+                            <span
+                              key={index}
+                              className="inline-flex items-center gap-1.5 rounded-full bg-fuchsia-100 px-3 py-1 text-xs font-medium text-fuchsia-800"
+                            >
+                              <CheckCircle
+                                size={12}
+                                className="text-fuchsia-600"
+                              />
+                              {feature}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </motion.div>
                   )}
-                </button>
-              ))}
+                  {activeTab === "shipping" && (
+                    <motion.div
+                      key="shipping"
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -15 }}
+                      transition={{ duration: 0.2 }}
+                      className="space-y-5"
+                    >
+                      <h3 className="text-xl font-bold text-neutral-800 mb-3">
+                        {isRtl
+                          ? "معلومات الشحن والتوصيل"
+                          : "Shipping & Delivery"}
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="flex items-start gap-3 p-4 bg-rose-50/20 rounded-2xl border border-rose-100">
+                          <Truck size={24} className="text-rose-600 mt-0.5" />
+                          <div>
+                            <h4 className="font-bold text-neutral-800 mb-1 text-sm">
+                              {isRtl ? "التوصيل السريع" : "Express Delivery"}
+                            </h4>
+                            <p className="text-xs text-neutral-600">
+                              {isRtl
+                                ? "توصيل في نفس اليوم للطلبات قبل الساعة 2 ظهراً"
+                                : "Same-day delivery for orders before 2 PM"}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-3 p-4 bg-rose-50/20 rounded-2xl border border-rose-100">
+                          <Shield size={24} className="text-rose-600 mt-0.5" />
+                          <div>
+                            <h4 className="font-bold text-neutral-800 mb-1 text-sm">
+                              {isRtl ? "التغليف الآمن" : "Secure Packaging"}
+                            </h4>
+                            <p className="text-xs text-neutral-600">
+                              {isRtl
+                                ? "نضمن وصول منتجاتك بحالة مثالية"
+                                : "We guarantee your products arrive in perfect condition"}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-3 p-4 bg-rose-50/20 rounded-2xl border border-rose-100">
+                          <Clock size={24} className="text-rose-600 mt-0.5" />
+                          <div>
+                            <h4 className="font-bold text-neutral-800 mb-1 text-sm">
+                              {isRtl ? "أوقات التوصيل" : "Delivery Times"}
+                            </h4>
+                            <p className="text-xs text-neutral-600">
+                              {isRtl
+                                ? "الرياض وجدة: 24 ساعة، المدن الأخرى: 2-3 أيام"
+                                : "Riyadh & Jeddah: 24 hours, Other cities: 2-3 days"}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-3 p-4 bg-rose-50/20 rounded-2xl border border-rose-100">
+                          <RotateCcw
+                            size={24}
+                            className="text-rose-600 mt-0.5"
+                          />
+                          <div>
+                            <h4 className="font-bold text-neutral-800 mb-1 text-sm">
+                              {isRtl ? "سياسة الإرجاع" : "Return Policy"}
+                            </h4>
+                            <p className="text-xs text-neutral-600">
+                              {isRtl
+                                ? "إمكانية الإرجاع خلال 7 أيام"
+                                : "Returns accepted within 7 days"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                  {activeTab === "care" && product.careTipsEn && (
+                    <motion.div
+                      key="care"
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -15 }}
+                      transition={{ duration: 0.2 }}
+                      className="p-6 bg-white rounded-3xl border border-neutral-100 shadow-[0_8px_30px_-12px_rgba(0,0,0,0.08)] space-y-4"
+                    >
+                      <h3 className="text-xl font-bold text-neutral-800 mb-4 flex items-center gap-2">
+                        <HeartPulse size={20} className="text-rose-600" />
+                        {isRtl ? "نصائح العناية" : "Care Tips"}
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {isRtl
+                          ? product.careTipsAr
+                              .split(". ")
+                              .filter(Boolean)
+                              .map((tip, index) => (
+                                <div
+                                  key={index}
+                                  className="flex items-center gap-3 p-4 bg-rose-50/20 rounded-2xl border border-rose-100 transition-all duration-300"
+                                >
+                                  <HeartPulse
+                                    size={20}
+                                    className="text-rose-600 flex-shrink-0"
+                                  />
+                                  <p className="text-sm text-neutral-700 font-medium">
+                                    {tip}
+                                  </p>
+                                </div>
+                              ))
+                          : product.careTipsEn
+                              .split(". ")
+                              .filter(Boolean)
+                              .map((tip, index) => (
+                                <div
+                                  key={index}
+                                  className="flex items-center gap-3 p-4 bg-rose-50/20 rounded-2xl border border-rose-100 transition-all duration-300"
+                                >
+                                  <HeartPulse
+                                    size={20}
+                                    className="text-rose-600 flex-shrink-0"
+                                  />
+                                  <p className="text-sm text-neutral-700 font-medium">
+                                    {tip}
+                                  </p>
+                                </div>
+                              ))}
+                      </div>
+                    </motion.div>
+                  )}
+                  {activeTab === "dimensions" && product.dimensionsEn && (
+                    <motion.div
+                      key="dimensions"
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -15 }}
+                      transition={{ duration: 0.2 }}
+                      className="p-6 bg-white rounded-3xl border border-neutral-100 shadow-[0_8px_30px_-12px_rgba(0,0,0,0.08)] space-y-4 text-center"
+                    >
+                      <h3 className="text-xl font-bold text-neutral-800 mb-4 flex items-center justify-center gap-2">
+                        <GaugeCircle size={20} className="text-teal-600" />
+                        {isRtl ? "الأبعاد" : "Dimensions"}
+                      </h3>
+                      <div className="inline-flex flex-col items-center justify-center p-6 bg-teal-50/20 rounded-3xl border border-teal-100 transition-all duration-300">
+                        <GaugeCircle size={48} className="text-teal-600 mb-2" />
+                        <p className="text-neutral-700 text-base font-medium">
+                          {isRtl ? product.dimensionsAr : product.dimensionsEn}
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
+                  {activeTab === "contents" &&
+                    product.arrangementContentsEn && (
+                      <motion.div
+                        key="contents"
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -15 }}
+                        transition={{ duration: 0.2 }}
+                        className="p-6 bg-white rounded-3xl border border-neutral-100 shadow-[0_8px_30px_-12px_rgba(0,0,0,0.08)] space-y-4"
+                      >
+                        <h3 className="text-xl font-bold text-neutral-800 mb-4 flex items-center gap-2">
+                          <Sparkles size={20} className="text-fuchsia-600" />
+                          {isRtl ? "محتويات التنسيق" : "Arrangement Contents"}
+                        </h3>
+                        <div className="flex flex-wrap items-center gap-3 p-4 bg-fuchsia-50/20 rounded-2xl border border-fuchsia-100">
+                          {isRtl
+                            ? product.arrangementContentsAr
+                                .split(".")
+                                .filter(Boolean)
+                                .map((item, index) => (
+                                  <div
+                                    key={index}
+                                    className="flex items-center gap-2 px-4 py-2 bg-fuchsia-100 rounded-full text-sm font-medium text-fuchsia-800 transition-all duration-300"
+                                  >
+                                    <Sparkles
+                                      size={14}
+                                      className="text-fuchsia-600 flex-shrink-0"
+                                    />
+                                    <span>{item.trim()}</span>
+                                  </div>
+                                ))
+                            : product.arrangementContentsEn
+                                .split(".")
+                                .filter(Boolean)
+                                .map((item, index) => (
+                                  <div
+                                    key={index}
+                                    className="flex items-center gap-2 px-4 py-2 bg-fuchsia-100 rounded-full text-sm font-medium text-fuchsia-800 transition-all duration-300"
+                                  >
+                                    <Sparkles
+                                      size={14}
+                                      className="text-fuchsia-600 flex-shrink-0"
+                                    />
+                                    <span>{item.trim()}</span>
+                                  </div>
+                                ))}
+                        </div>
+                      </motion.div>
+                    )}
+                </AnimatePresence>
+              </div>
             </div>
-            <div className="p-6">
-              <AnimatePresence mode="wait">
-                {activeTab === "description" && (
-                  <motion.div
-                    key="description"
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -15 }}
-                    transition={{ duration: 0.2 }}
-                    className="space-y-4"
-                  >
-                    <h3 className="text-xl font-bold text-neutral-800 mb-3">
-                      {isRtl ? "تفاصيل المنتج" : "Product Details"}
-                    </h3>
-                    <div className="prose max-w-none text-neutral-600 leading-relaxed text-sm">
-                      <p>
-                        {isRtl ? product.descriptionAr : product.descriptionEn}
-                      </p>
-                    </div>
-                    <div className="bg-fuchsia-50/20 rounded-2xl p-4 mt-6 border border-fuchsia-100">
-                      <h4 className="font-bold text-neutral-800 mb-2 flex items-center gap-2 text-sm">
-                        <CheckCircle size={16} className="text-fuchsia-600" />
-                        {isRtl ? "المميزات الرئيسية" : "Key Features"}
-                      </h4>
-                      <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        {[
-                          isRtl
-                            ? "جودة عالية مضمونة"
-                            : "Premium quality guaranteed",
-                          isRtl
-                            ? "تصميم أنيق وعصري"
-                            : "Elegant and modern design",
-                          isRtl
-                            ? "مناسب لجميع المناسبات"
-                            : "Perfect for all occasions",
-                          isRtl ? "تغليف فاخر مجاني" : "Free luxury packaging",
-                        ].map((feature, index) => (
-                          <li
-                            key={index}
-                            className="flex items-center gap-2 text-neutral-700 text-xs sm:text-sm"
-                          >
-                            <CheckCircle
-                              size={14}
-                              className="text-fuchsia-600 flex-shrink-0"
-                            />
-                            <span>{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </motion.div>
-                )}
-                {activeTab === "shipping" && (
-                  <motion.div
-                    key="shipping"
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -15 }}
-                    transition={{ duration: 0.2 }}
-                    className="space-y-5"
-                  >
-                    <h3 className="text-xl font-bold text-neutral-800 mb-3">
-                      {isRtl ? "معلومات الشحن والتوصيل" : "Shipping & Delivery"}
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="flex items-start gap-3 p-4 bg-rose-50/20 rounded-2xl border border-rose-100">
-                        <Truck size={20} className="text-rose-600 mt-0.5" />
-                        <div>
-                          <h4 className="font-bold text-neutral-800 mb-1 text-sm">
-                            {isRtl ? "التوصيل السريع" : "Express Delivery"}
-                          </h4>
-                          <p className="text-xs text-neutral-600">
-                            {isRtl
-                              ? "توصيل في نفس اليوم للطلبات قبل الساعة 2 ظهراً"
-                              : "Same-day delivery for orders before 2 PM"}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3 p-4 bg-rose-50/20 rounded-2xl border border-rose-100">
-                        <Shield size={20} className="text-rose-600 mt-0.5" />
-                        <div>
-                          <h4 className="font-bold text-neutral-800 mb-1 text-sm">
-                            {isRtl ? "التغليف الآمن" : "Secure Packaging"}
-                          </h4>
-                          <p className="text-xs text-neutral-600">
-                            {isRtl
-                              ? "نضمن وصول منتجاتك بحالة مثالية"
-                              : "We guarantee your products arrive in perfect condition"}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3 p-4 bg-rose-50/20 rounded-2xl border border-rose-100">
-                        <Clock size={20} className="text-rose-600 mt-0.5" />
-                        <div>
-                          <h4 className="font-bold text-neutral-800 mb-1 text-sm">
-                            {isRtl ? "أوقات التوصيل" : "Delivery Times"}
-                          </h4>
-                          <p className="text-xs text-neutral-600">
-                            {isRtl
-                              ? "الرياض وجدة: 24 ساعة، المدن الأخرى: 2-3 أيام"
-                              : "Riyadh & Jeddah: 24 hours, Other cities: 2-3 days"}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3 p-4 bg-rose-50/20 rounded-2xl border border-rose-100">
-                        <RotateCcw size={20} className="text-rose-600 mt-0.5" />
-                        <div>
-                          <h4 className="font-bold text-neutral-800 mb-1 text-sm">
-                            {isRtl ? "سياسة الإرجاع" : "Return Policy"}
-                          </h4>
-                          <p className="text-xs text-neutral-600">
-                            {isRtl
-                              ? "إمكانية الإرجاع خلال 7 أيام"
-                              : "Returns accepted within 7 days"}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        )}
         {/* Related Products */}
         {relatedProducts.length > 0 && (
           <motion.div
@@ -677,9 +857,9 @@ const ProductPage: React.FC = () => {
             onClick={() => setShowImageZoomModal(false)}
           >
             <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               className="relative max-w-5xl max-h-full w-full h-auto"
               onClick={(e) => e.stopPropagation()}
             >
