@@ -11,6 +11,7 @@ import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
 import BottomNavigation from "./components/layout/BottomNavigation";
 import ProtectedRoute from "./components/layout/ProtectedRoute";
+import GradualBlur from "./components/ui/GradualBlur";
 
 const HomePage = lazy(() => import("./pages/HomePage"));
 const CategoryPage = lazy(() => import("./pages/CategoryPage"));
@@ -91,7 +92,8 @@ function App() {
                 style={{ scrollBehavior: "smooth" }}
               >
                 <Header />
-                <main className="flex-grow pb-0 md:pb-0">
+                <main className="flex-grow pb-0 md:pb-0 relative" style={{ position: 'relative', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', overflowY: 'auto' }}>
                   <Suspense
                     fallback={
                       <div className="flex justify-center items-center min-h-screen">
@@ -232,6 +234,18 @@ function App() {
                       <Route path="*" element={<NotFoundPage />} />
                     </Routes>
                   </Suspense>
+                  </div>
+                  
+                  <GradualBlur
+                    target="parent"
+                    position="bottom"
+                    height="6rem"
+                    strength={2}
+                    divCount={5}
+                    curve="bezier"
+                    exponential={true}
+                    opacity={1}
+                  />
                 </main>
                 <Footer />
                 <BottomNavigation />
