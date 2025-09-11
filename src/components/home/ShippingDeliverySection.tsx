@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Truck, Clock, MapPin, Shield, CheckCircle } from "lucide-react";
+import { Clock, MapPin, Shield, CheckCircle, Link } from "lucide-react";
 import { ProductImage } from "../../features/images";
 import { motion } from "framer-motion";
 
@@ -35,21 +35,32 @@ const ShippingDeliverySection: React.FC = () => {
   );
 
   return (
-    <section className="py-3 sm:py-12 text-gray-900">
-      <div className="container-custom px-4 sm:px-16 mx-auto">
+    <section className="py-6 bg-white text-gray-900">
+      <div className="container-custom px-4 sm:px-6 mx-auto">
+        <div className="flex items-center justify-between mb-6">
+          <h2
+            className={`text-lg sm:text-xl font-bold text-gray-900 ${
+              i18n.language === "ar" ? "font-tajawal" : "font-poppins"
+            }`}
+          >
+            {t("home.shipping.title")}
+          </h2>
+          <Link
+            to="/shipping-policy"
+            className="text-orange-500 text-sm font-medium hover:text-orange-600 transition-colors"
+          >
+            {isRtl ? "عرض المزيد" : "View More"}
+          </Link>
+        </div>
+
         <div className="flex flex-col lg:grid lg:grid-cols-2 gap-8 md:gap-12 items-center">
           {/* Content */}
           <div className={`${isRtl ? "lg:order-2" : "lg:order-1"} w-full`}>
-            <div className="text-center lg:text-start mb-8 md:mb-10">
-              <h2 className="font-serif text-xl sm:text-2xl md:text-3xl lg:text-4xl font-medium text-purple-800 leading-tight flex items-center justify-center lg:justify-start gap-3">
-                <Truck size={28} className="text-purple-700" />
-                {t("home.shipping.title")}
-              </h2>
-              <p className="mt-2.5 text-sm sm:text-base max-w-xs sm:max-w-md md:max-w-lg mx-auto lg:mx-0 leading-relaxed text-gray-600">
-                {t("home.shipping.description")}
-              </p>
-            </div>
+            <p className="mt-2.5 text-sm sm:text-base max-w-xs sm:max-w-md md:max-w-lg mx-auto lg:mx-0 leading-relaxed text-gray-600 hidden lg:block">
+              {t("home.shipping.description")}
+            </p>
 
+            {/* Desktop Features */}
             <div className="relative h-auto md:h-[520px] hidden md:block">
               <svg
                 viewBox="0 0 200 520"
@@ -102,12 +113,12 @@ const ShippingDeliverySection: React.FC = () => {
               })}
             </div>
 
-            {/* Mobile features list (hidden on desktop) */}
+            {/* Mobile Features */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:hidden mt-6">
               {features.map((feature, index) => (
                 <div
                   key={index}
-                  className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
+                  className="bg-white rounded-xl border border-gray-100 shadow-sm p-3"
                 >
                   <div className="flex items-center mb-2">
                     <div className="p-1 bg-purple-100 rounded-full mr-2">

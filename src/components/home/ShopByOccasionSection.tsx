@@ -12,40 +12,31 @@ interface Occasion {
   imageUrl: string;
 }
 
-const OccasionCard: React.FC<{ occasion: Occasion; isFixed?: boolean }> = ({
-  occasion,
-  isFixed = false,
-}) => {
+const OccasionCard: React.FC<{ occasion: Occasion }> = ({ occasion }) => {
   const { t } = useTranslation();
 
   return (
     <Link
       to={`/occasion/${occasion.id}`}
-      className={`flex flex-col items-center flex-shrink-0 w-28 sm:w-32 md:w-36 text-center ${
-        isFixed ? "" : "snap-center"
-      }`}
+      className="flex flex-col items-center flex-shrink-0 w-20 sm:w-24 md:w-28 text-center snap-center"
     >
-      <div
-        className={`w-full aspect-square rounded-[20px] overflow-hidden transition-none ${
-          isFixed ? "relative z-20" : "relative z-10"
-        }`}
-      >
+      <div className="w-full aspect-square rounded-full overflow-hidden relative z-10 bg-gradient-to-br from-purple-100 to-pink-50 shadow-sm border border-purple-100">
         <ProductImage
           src={occasion.imageUrl}
           alt={t(occasion.nameKey)}
-          className="w-full  h-full object-cover rounded-[20px]"
-          width={120}
-          height={120}
+          className="w-full h-full object-cover"
+          width={80}
+          height={80}
           aspectRatio="square"
-          sizes="(max-width: 640px) 112px, (max-width: 768px) 128px, 144px"
+          sizes="(max-width: 640px) 80px, (max-width: 768px) 96px, 112px"
           quality={100}
           priority={true}
           showZoom={false}
-          placeholderSize={24}
+          placeholderSize={20}
           fallbackSrc="/public/occasions/3.png"
         />
       </div>
-      <span className="text-stone-600 text-xs sm:text-sm font-medium mt-2.5 w-full line-clamp-2 leading-tight text-center px-1">
+      <span className="text-stone-700 text-xs sm:text-sm font-medium mt-2 w-full line-clamp-1 leading-tight text-center">
         {t(occasion.nameKey)}
       </span>
     </Link>
@@ -58,33 +49,23 @@ const ShopByOccasionSection: React.FC = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [showArrows, setShowArrows] = useState(false);
 
-  const { firstOccasion, scrollableOccasions } = useMemo(() => {
-    if (occasions.length === 0)
-      return { firstOccasion: null, scrollableOccasions: [] };
-
-    return {
-      firstOccasion: occasions[0] as Occasion,
-      scrollableOccasions: occasions.slice(1) as Occasion[],
-    };
-  }, []);
-
   const occasionImages = useMemo(
-    () => scrollableOccasions.slice(0, 9).map((occasion) => occasion.imageUrl),
-    [scrollableOccasions]
+    () => occasions.slice(0, 12).map((occasion) => occasion.imageUrl),
+    []
   );
   useImagePreloader(occasionImages, { priority: true });
 
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
-      const cardWidth = window.innerWidth >= 768 ? 144 + 24 : 112 + 16; // card width + gap
+      const cardWidth = window.innerWidth >= 768 ? 112 + 16 : 80 + 12; // card width + gap
       scrollRef.current.scrollBy({
         left: isRtl
           ? direction === "left"
-            ? cardWidth
-            : -cardWidth
+            ? cardWidth * 2
+            : -cardWidth * 2
           : direction === "left"
-          ? -cardWidth
-          : cardWidth,
+          ? -cardWidth * 2
+          : cardWidth * 2,
         behavior: "smooth",
       });
     }
@@ -104,81 +85,66 @@ const ShopByOccasionSection: React.FC = () => {
       clearTimeout(timeoutId);
       window.removeEventListener("resize", checkOverflow);
     };
-  }, [scrollableOccasions]);
+  }, []);
 
-  if (!firstOccasion) return null;
+  if (occasions.length === 0) return null;
 
   return (
-    <section className="py-3">
-      <div className="container-custom px-4 sm:px-16">
-        <div className="relative text-center my-10">
+    <section className="py-6 bg-gray-50">
+      <div className="container-custom px-4 sm:px-6">
+        <div className="flex items-center justify-between mb-6">
           <h2
-            className={`
-    relative z-10 inline-flex items-center justify-center
-    bg-purple-600 text-white px-5 py-2 text-xl font-bold
-    ${i18n.language === "ar" ? "font-tajawal" : "font-poppins"}
-    rounded-md
-  `}
+            className={`text-lg sm:text-xl font-bold text-gray-900 ${
+              i18n.language === "ar" ? "font-tajawal" : "font-poppins"
+            }`}
           >
-            <span
-              className="absolute left-0 -ml-2 w-0 h-0
-                     border-t-[10px] border-b-[10px] border-r-[10px]
-                     border-t-transparent border-b-transparent border-r-purple-600"
-            ></span>
-
             {t("home.shopByOccasion.title")}
-
-            <span
-              className="absolute right-0 -mr-2 w-0 h-0
-                     border-t-[10px] border-b-[10px] border-l-[10px]
-                     border-t-transparent border-b-transparent border-l-purple-600"
-            ></span>
           </h2>
+          <Link
+            to="/occasions"
+            className="text-orange-500 text-sm font-medium hover:text-orange-600 transition-colors"
+          >
+            {t("home.occasions.viewMore")}
+          </Link>
         </div>
 
         <div className="relative">
-          <div className="flex items-start gap-4 sm:gap-5 md:gap-6">
-            <div className="flex-shrink-0 z-30">
-              <OccasionCard occasion={firstOccasion} isFixed={true} />
-            </div>
-
-            <div
-              ref={scrollRef}
-              className="flex-grow flex items-start overflow-x-auto gap-4 sm:gap-5 md:gap-6 pb-4 snap-x snap-mandatory scrollbar-hidden"
-              style={{ scrollSnapStop: "always" }}
-            >
-              {scrollableOccasions.map((occasion, index) => (
-                <div
-                  key={occasion.id}
-                  className="animate-fade-in snap-start"
-                  style={{ animationDelay: `${index * 50}ms` }}
-                >
-                  <OccasionCard occasion={occasion} />
-                </div>
-              ))}
-            </div>
+          <div
+            ref={scrollRef}
+            className="flex items-start overflow-x-auto gap-3 sm:gap-4 md:gap-4 pb-4 snap-x snap-mandatory scrollbar-hidden"
+            style={{ scrollSnapStop: "always" }}
+          >
+            {occasions.map((occasion, index) => (
+              <div
+                key={occasion.id}
+                className="animate-fade-in snap-start"
+                style={{ animationDelay: `${index * 30}ms` }}
+              >
+                <OccasionCard occasion={occasion as Occasion} />
+              </div>
+            ))}
           </div>
 
           {showArrows && (
             <>
               <button
                 onClick={() => scroll("left")}
-                className={`hidden md:flex items-center justify-center absolute top-[40%] -translate-y-1/2 bg-white/90 text-stone-600 rounded-full w-9 h-9 shadow ring-1 ring-stone-200 z-40 ${
-                  isRtl ? "-right-8" : "-left-8"
+                className={`hidden md:flex items-center justify-center absolute top-1/2 -translate-y-1/2 bg-white text-gray-600 rounded-full w-8 h-8 shadow-md hover:shadow-lg transition-shadow z-40 ${
+                  isRtl ? "-right-4" : "-left-4"
                 }`}
                 aria-label={t("common.scrollLeft")}
               >
-                {isRtl ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+                {isRtl ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
               </button>
 
               <button
                 onClick={() => scroll("right")}
-                className={`hidden md:flex items-center justify-center absolute top-[40%] -translate-y-1/2 bg-white/90 text-stone-600 rounded-full w-9 h-9 shadow ring-1 ring-stone-200 z-40 ${
-                  isRtl ? "-left-8" : "-right-8"
+                className={`hidden md:flex items-center justify-center absolute top-1/2 -translate-y-1/2 bg-white text-gray-600 rounded-full w-8 h-8 shadow-md hover:shadow-lg transition-shadow z-40 ${
+                  isRtl ? "-left-4" : "-right-4"
                 }`}
-                aria-label={t("common.scrollRight")}
+                aria-label={isRtl ? "التمرير لليمين" : "Scroll right"}
               >
-                {isRtl ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
+                {isRtl ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
               </button>
             </>
           )}
